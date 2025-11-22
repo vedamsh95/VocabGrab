@@ -1,0 +1,59 @@
+@import "tailwindcss";
+
+@theme {
+    --color-background: #02040a;
+    --color-glass: rgba(255, 255, 255, 0.05);
+    --color-glass-border: rgba(255, 255, 255, 0.1);
+    --font-sans: Inter, sans-serif;
+}
+
+@layer base {
+    body {
+        @apply bg-background text-slate-300 antialiased;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+        @apply text-white font-bold;
+    }
+}
+
+@layer utilities {
+    .glass-panel {
+        @apply bg-glass backdrop-blur-xl border border-glass-border;
+    }
+
+    .glass-card {
+        @apply bg-glass backdrop-blur-xl border border-glass-border rounded-3xl transition-all duration-300 hover:bg-white/10;
+    }
+
+    .text-gradient {
+        @apply bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 to-teal-400;
+    }
+
+    .btn-primary {
+        @apply bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold rounded-xl shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/40 transition-all active:scale-95;
+    }
+
+    /* 3D Transform Utilities */
+    .perspective-1000 {
+        perspective: 1000px;
+    }
+
+    .preserve-3d {
+        transform-style: preserve-3d;
+    }
+
+    .backface-hidden {
+        backface-visibility: hidden;
+        -webkit-backface-visibility: hidden;
+    }
+
+    .rotate-y-180 {
+        transform: rotateY(180deg);
+    }
+}
