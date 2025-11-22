@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Volume2, ChevronDown, ChevronUp, ArrowLeft, Search } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { getActiveSet } from '../../lib/storage';
-import { getLanguageCode } from '../../lib/languages';
+import { getLanguageCode, getBestVoice } from '../../lib/languages';
 import { clsx } from 'clsx';
 
 const VocabTable: React.FC = () => {
@@ -22,7 +22,10 @@ const VocabTable: React.FC = () => {
     const handleSpeak = (text: string, e: React.MouseEvent) => {
         e.stopPropagation();
         const utterance = new SpeechSynthesisUtterance(text);
-        utterance.lang = getLanguageCode(activeSet.targetLanguage);
+        const langCode = getLanguageCode(activeSet?.targetLanguage || 'German');
+        utterance.lang = langCode;
+        const voice = getBestVoice(langCode);
+        if (voice) utterance.voice = voice;
         window.speechSynthesis.speak(utterance);
     };
 
