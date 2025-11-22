@@ -14,16 +14,12 @@ const Dashboard: React.FC = () => {
         level: Math.random() > 0.7 ? 2 : Math.random() > 0.4 ? 1 : 0
     }));
 
-    return (
-        <div className="p-6 md:p-8 max-w-7xl mx-auto">
-            <header className="mb-8 flex items-center gap-4">
-                <img src={Logo} alt="VocabGrab Logo" className="w-16 h-16 object-contain drop-shadow-lg" />
-                <div>
-                    <h1 className="text-3xl font-bold text-white mb-1">
-                        Welcome back, <span className="text-gradient">Learner</span>
-                    </h1>
-                    <p className="text-slate-400">Ready to continue your streak?</p>
-                </div>
+            <header className="mb-12 flex flex-col items-center text-center">
+                <img src={Logo} alt="VocabGrab Logo" className="w-24 h-24 object-contain mb-6 drop-shadow-2xl" />
+                <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">
+                    Welcome back, <span className="text-gradient">Learner</span>
+                </h1>
+                <p className="text-lg text-slate-400">Ready to continue your streak?</p>
             </header>
 
             <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6 auto-rows-[180px]">
@@ -165,7 +161,7 @@ const Dashboard: React.FC = () => {
                 </motion.div>
 
             </div>
-        </div>
+        </div >
     );
 };
 
