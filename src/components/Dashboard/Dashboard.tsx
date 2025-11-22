@@ -4,6 +4,8 @@ import { Flame, Trophy, Upload, Play, Calendar } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { getActiveSet } from '../../lib/storage';
 
+import Logo from '../../assets/Logo.png';
+
 const Dashboard: React.FC = () => {
     const activeSet = getActiveSet();
 
@@ -14,11 +16,14 @@ const Dashboard: React.FC = () => {
 
     return (
         <div className="p-6 md:p-8 max-w-7xl mx-auto">
-            <header className="mb-8">
-                <h1 className="text-3xl font-bold text-white mb-2">
-                    Welcome back, <span className="text-gradient">Learner</span>
-                </h1>
-                <p className="text-slate-400">Ready to continue your streak?</p>
+            <header className="mb-8 flex items-center gap-4">
+                <img src={Logo} alt="VocabGrab Logo" className="w-16 h-16 object-contain drop-shadow-lg" />
+                <div>
+                    <h1 className="text-3xl font-bold text-white mb-1">
+                        Welcome back, <span className="text-gradient">Learner</span>
+                    </h1>
+                    <p className="text-slate-400">Ready to continue your streak?</p>
+                </div>
             </header>
 
             <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6 auto-rows-[180px]">
