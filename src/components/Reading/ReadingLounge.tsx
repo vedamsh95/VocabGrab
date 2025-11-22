@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { clsx } from 'clsx';
 import { BookOpen, MessageCircle, Newspaper, Info, X, Eye, EyeOff, Play, Pause } from 'lucide-react';
 import type { ReadingContent, AnalyzedSentence } from '../../types/schema';
-import SmartSentence from '../Practice/SmartSentence';
+
 import { useReadStore } from '../../store/useReadStore';
 import { getLanguageCode, getBestVoice } from '../../lib/languages';
 
@@ -14,6 +14,8 @@ interface ReadingLoungeProps {
 const ReadingLounge: React.FC<ReadingLoungeProps> = ({ content }) => {
     const [selectedSentence, setSelectedSentence] = useState<AnalyzedSentence | null>(null);
     const [xRayMode, setXRayMode] = useState(false);
+    const [selectionMode, setSelectionMode] = useState<'sentence' | 'word'>('sentence');
+    const [selectedWord, setSelectedWord] = useState<{ word: string; translation: string; grammarTip?: string } | null>(null);
 
     // Karaoke Store
     const { isPlaying, activeSegmentId, play, pause, setSegment } = useReadStore();
@@ -97,6 +99,27 @@ const ReadingLounge: React.FC<ReadingLoungeProps> = ({ content }) => {
         }
     };
 
+    const handleWordClick = (word: string, e: React.MouseEvent) => {
+        e.stopPropagation();
+        // Simple lookup simulation (in real app, use dictionary)
+        import('../../lib/dictionary').then(({ lookupWord }) => {
+            const entry = lookupWord(word);
+            if (entry) {
+                setSelectedWord({
+                    word: entry.word,
+                    translation: entry.definition,
+                    grammarTip: `${entry.pos} ${entry.gender || ''}`
+                });
+            } else {
+                setSelectedWord({
+                    word: word,
+                    translation: "Translation not found",
+                    grammarTip: "Unknown"
+                });
+            }
+        });
+    };
+
     return (
         <div className="flex flex-col lg:flex-row h-[calc(100vh-100px)] gap-6">
             {/* Main Reader Area */}
@@ -108,7 +131,23 @@ const ReadingLounge: React.FC<ReadingLoungeProps> = ({ content }) => {
                             {content.mode === 'Story' && <BookOpen size={24} />}
                             {content.mode === 'News' && <Newspaper size={24} />}
                         </div>
-                        <h2 className="text-2xl font-bold text-white">{content.title}</h2>
+                        <div>
+                            <h2 className="text-2xl font-bold text-white">{content.title}</h2>
+                            <div className="flex gap-2 mt-1">
+                                <button
+                                    onClick={() => { setSelectionMode('sentence'); setSelectedWord(null); }}
+                                    className={clsx("text-xs px-2 py-0.5 rounded transition-colors", selectionMode === 'sentence' ? "bg-white/20 text-white" : "text-slate-500 hover:text-slate-300")}
+                                >
+                                    Sentence Mode
+                                </button>
+                                <button
+                                    onClick={() => { setSelectionMode('word'); setSelectedSentence(null); }}
+                                    className={clsx("text-xs px-2 py-0.5 rounded transition-colors", selectionMode === 'word' ? "bg-white/20 text-white" : "text-slate-500 hover:text-slate-300")}
+                                >
+                                    Word Mode
+                                </button>
+                            </div>
+                        </div>
                     </div>
 
                     <div className="flex items-center gap-3">
@@ -153,35 +192,56 @@ const ReadingLounge: React.FC<ReadingLoungeProps> = ({ content }) => {
                 </AnimatePresence>
 
                 <div className={clsx("max-w-3xl mx-auto", isChat ? "space-y-6 px-2" : "px-8 py-4 leading-loose text-lg")}>
-                    {isChat ? (
-                        // Chat Mode: Bubbles
-                        content.content.map((item) => (
-                            <div
-                                key={item.id}
-                                ref={activeSegmentId === item.id ? activeRef : null}
-                                onClick={() => {
+                    {content.content.map((item) => (
+                        <div
+                            key={item.id}
+                            ref={activeSegmentId === item.id ? activeRef : null}
+                            onClick={() => {
+                                if (selectionMode === 'sentence') {
                                     setSelectedSentence(item);
                                     setSegment(item.id);
                                     if (!isPlaying) play();
-                                }}
-                                className={clsx(
-                                    "relative group cursor-pointer transition-all duration-300 rounded-xl p-4 border border-transparent",
-                                    selectedSentence?.id === item.id || activeSegmentId === item.id
-                                        ? "bg-white/10 border-emerald-500/30 shadow-lg"
-                                        : "hover:bg-white/5 hover:border-white/10",
-                                    item.speaker !== 'Narrator' ? "w-fit max-w-[85%]" : "w-full",
-                                    item.speaker === 'Me' ? "ml-auto bg-emerald-900/20" : "",
-                                    item.speaker !== 'Me' && item.speaker !== 'Narrator' ? "mr-auto bg-slate-800/40" : ""
-                                )}
-                            >
-                                {item.speaker && item.speaker !== 'Narrator' && (
-                                    <div className="text-xs text-slate-500 mb-1 font-medium uppercase tracking-wider">
-                                        {item.speaker}
-                                    </div>
-                                )}
+                                }
+                            }}
+                            className={clsx(
+                                "relative transition-all duration-300 rounded-xl border border-transparent",
+                                isChat ? "p-4" : "inline",
+                                selectionMode === 'sentence' && (selectedSentence?.id === item.id || activeSegmentId === item.id)
+                                    ? "bg-white/10 border-emerald-500/30 shadow-lg"
+                                    : selectionMode === 'sentence' ? "hover:bg-white/5 hover:border-white/10 cursor-pointer" : "",
+                                isChat && item.speaker !== 'Narrator' ? "w-fit max-w-[85%]" : "w-full",
+                                isChat && item.speaker === 'Me' ? "ml-auto bg-emerald-900/20" : "",
+                                isChat && item.speaker !== 'Me' && item.speaker !== 'Narrator' ? "mr-auto bg-slate-800/40" : ""
+                            )}
+                        >
+                            {isChat && item.speaker && item.speaker !== 'Narrator' && (
+                                <div className="text-xs text-slate-500 mb-1 font-medium uppercase tracking-wider">
+                                    {item.speaker}
+                                </div>
+                            )}
 
-                                {xRayMode && item.grammarAnalysis ? (
-                                    <div className="text-lg leading-relaxed">
+                            {selectionMode === 'word' ? (
+                                <div className={clsx("text-lg leading-relaxed", isChat ? "" : "inline")}>
+                                    {item.sentence.split(/([ .,;?!]+)/).filter(Boolean).map((token, idx) => {
+                                        const isWord = /^\w+$/.test(token);
+                                        if (!isWord) return <span key={idx}>{token}</span>;
+                                        return (
+                                            <span
+                                                key={idx}
+                                                onClick={(e) => handleWordClick(token, e)}
+                                                className={clsx(
+                                                    "cursor-pointer hover:text-emerald-400 hover:underline decoration-emerald-500/50 underline-offset-4 transition-colors",
+                                                    selectedWord?.word === token ? "text-emerald-400 font-bold" : "text-slate-200"
+                                                )}
+                                            >
+                                                {token}
+                                            </span>
+                                        );
+                                    })}
+                                </div>
+                            ) : (
+                                xRayMode && item.grammarAnalysis ? (
+                                    <div className={clsx("text-lg leading-relaxed", isChat ? "" : "inline")}>
                                         {item.grammarAnalysis.map((seg, idx) => (
                                             <span
                                                 key={idx}
@@ -199,65 +259,56 @@ const ReadingLounge: React.FC<ReadingLoungeProps> = ({ content }) => {
                                         ))}
                                     </div>
                                 ) : (
-                                    <SmartSentence
-                                        sentence={item.sentence}
-                                        className={clsx(
-                                            "text-lg leading-relaxed",
-                                            (selectedSentence?.id === item.id || activeSegmentId === item.id) ? "text-white" : "text-slate-200"
-                                        )}
-                                    />
-                                )}
-                            </div>
-                        ))
-                    ) : (
-                        // Story Mode: Continuous Paragraph
-                        <div className="text-justify">
-                            {content.content.map((item) => (
-                                <span
-                                    key={item.id}
-                                    ref={activeSegmentId === item.id ? activeRef : null}
-                                    onClick={() => {
-                                        setSelectedSentence(item);
-                                        setSegment(item.id);
-                                        if (!isPlaying) play();
-                                    }}
-                                    className={clsx(
-                                        "cursor-pointer transition-colors duration-200 rounded px-1 py-0.5 mx-0.5 inline-block",
-                                        (selectedSentence?.id === item.id || activeSegmentId === item.id)
-                                            ? "bg-emerald-500/20 text-white shadow-[0_0_10px_rgba(16,185,129,0.2)]"
-                                            : "hover:bg-white/10 text-slate-300"
-                                    )}
-                                >
-                                    {xRayMode && item.grammarAnalysis ? (
-                                        item.grammarAnalysis.map((seg, idx) => (
-                                            <span
-                                                key={idx}
-                                                className={clsx(
-                                                    "mx-0.5 px-1 rounded",
-                                                    seg.color === 'blue' && "bg-blue-500/20 text-blue-200",
-                                                    seg.color === 'red' && "bg-red-500/20 text-red-200",
-                                                    seg.color === 'green' && "bg-emerald-500/20 text-emerald-200",
-                                                    seg.color === 'yellow' && "bg-amber-500/20 text-amber-200",
-                                                    seg.color === 'gray' && "text-slate-300"
-                                                )}
-                                            >
-                                                {seg.segment}
-                                            </span>
-                                        ))
-                                    ) : (
-                                        item.sentence
-                                    )}
-                                </span>
-                            ))}
+                                    <span className={clsx("text-lg leading-relaxed", (selectedSentence?.id === item.id || activeSegmentId === item.id) ? "text-white" : "text-slate-200")}>
+                                        {item.sentence}
+                                    </span>
+                                )
+                            )}
                         </div>
-                    )}
+                    ))}
                 </div>
             </div>
 
             {/* Smart Analysis Panel (Side) */}
             <AnimatePresence mode="wait">
-                {selectedSentence ? (
+                {selectedWord ? (
                     <motion.div
+                        key="word-panel"
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: 20 }}
+                        className="w-full lg:w-[400px] glass-panel rounded-2xl p-6 overflow-y-auto border-l border-white/10"
+                    >
+                        <div className="flex items-center justify-between mb-6">
+                            <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                                <BookOpen size={20} className="text-emerald-400" />
+                                Word Lookup
+                            </h3>
+                            <button
+                                onClick={() => setSelectedWord(null)}
+                                className="p-1 hover:bg-white/10 rounded-full transition-colors"
+                            >
+                                <X size={20} className="text-slate-400" />
+                            </button>
+                        </div>
+
+                        <div className="space-y-6">
+                            <div className="p-6 rounded-xl bg-white/5 border border-white/10 text-center">
+                                <h2 className="text-3xl font-bold text-white mb-2">{selectedWord.word}</h2>
+                                <p className="text-xl text-emerald-400">{selectedWord.translation}</p>
+                                {selectedWord.grammarTip && (
+                                    <div className="mt-4 pt-4 border-t border-white/10">
+                                        <span className="px-2 py-1 rounded bg-white/10 text-xs text-slate-400">
+                                            {selectedWord.grammarTip}
+                                        </span>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </motion.div>
+                ) : selectedSentence ? (
+                    <motion.div
+                        key="sentence-panel"
                         initial={{ opacity: 0, x: 20 }}
                         animate={{ opacity: 1, x: 0 }}
                         exit={{ opacity: 0, x: 20 }}
@@ -323,7 +374,7 @@ const ReadingLounge: React.FC<ReadingLoungeProps> = ({ content }) => {
                     <div className="hidden lg:flex w-[400px] items-center justify-center text-slate-500 glass-panel rounded-2xl border-l border-white/10">
                         <div className="text-center p-6">
                             <BookOpen size={48} className="mx-auto mb-4 opacity-20" />
-                            <p>Select a sentence to view<br />Smart Analysis</p>
+                            <p>Select a {selectionMode} to view<br />{selectionMode === 'word' ? 'Definition' : 'Smart Analysis'}</p>
                         </div>
                     </div>
                 )}
