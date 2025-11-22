@@ -14,6 +14,8 @@ const Dashboard: React.FC = () => {
         level: Math.random() > 0.7 ? 2 : Math.random() > 0.4 ? 1 : 0
     }));
 
+    return (
+        <div className="p-6 md:p-8 max-w-7xl mx-auto">
             <header className="mb-12 flex flex-col items-center text-center">
                 <img src={Logo} alt="VocabGrab Logo" className="w-24 h-24 object-contain mb-6 drop-shadow-2xl" />
                 <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">
