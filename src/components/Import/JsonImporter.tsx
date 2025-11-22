@@ -39,6 +39,7 @@ Schema:
     {
       "id": "unique_section_id",
       "title": "Chapter 1",
+      "targetLanguage": "German", // Optional, inherits from set
       "mode": "Story", // or "Conversation"
       "content": [
         {
@@ -98,7 +99,10 @@ const JsonImporter: React.FC = () => {
                 vocabulary: parsed.vocabulary || [],
                 flashcards: parsed.flashcards || [],
                 exercises: parsed.exercises || { fillInBlanks: [], multipleChoice: [] },
-                readingSections: parsed.readingSections || []
+                readingSections: (parsed.readingSections || []).map((section: any) => ({
+                    ...section,
+                    targetLanguage: parsed.targetLanguage // Inherit from set
+                }))
             };
 
             addStudySet(newSet);

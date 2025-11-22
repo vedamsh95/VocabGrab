@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Popover } from 'react-tiny-popover';
 import { getActiveSet, updateStudySet } from '../../lib/storage';
 import { lookupWord, type DictionaryEntry } from '../../lib/dictionary';
+import { getLanguageCode } from '../../lib/languages';
 import { clsx } from 'clsx';
 import { Plus, Check, Book, Volume2 } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
@@ -89,7 +90,8 @@ const SmartWord: React.FC<SmartWordProps> = ({ word, vocabItem, sentenceContext 
     const handleSpeak = (e: React.MouseEvent) => {
         e.stopPropagation();
         const utterance = new SpeechSynthesisUtterance(word);
-        utterance.lang = 'de-DE';
+        const activeSet = getActiveSet();
+        utterance.lang = getLanguageCode(activeSet?.targetLanguage || 'German');
         window.speechSynthesis.speak(utterance);
     };
 

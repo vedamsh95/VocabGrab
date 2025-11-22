@@ -5,6 +5,7 @@ import { BookOpen, MessageCircle, Newspaper, Info, X, Eye, EyeOff, Play, Pause }
 import type { ReadingContent, AnalyzedSentence } from '../../types/schema';
 import SmartSentence from '../Practice/SmartSentence';
 import { useReadStore } from '../../store/useReadStore';
+import { getLanguageCode } from '../../lib/languages';
 
 interface ReadingLoungeProps {
     content: ReadingContent;
@@ -54,8 +55,8 @@ const ReadingLounge: React.FC<ReadingLoungeProps> = ({ content }) => {
                 const utterance = new SpeechSynthesisUtterance(segment.sentence);
                 utteranceRef.current = utterance;
 
-                // Set Language based on content (Assuming German for now based on context, but ideally from prop)
-                utterance.lang = 'de-DE';
+                // Set Language based on content
+                utterance.lang = getLanguageCode(content.targetLanguage);
                 utterance.rate = 0.9; // Slightly slower for learning
 
                 utterance.onend = () => {

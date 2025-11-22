@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Volume2, ChevronDown, ChevronUp, ArrowLeft, Search } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { getActiveSet } from '../../lib/storage';
+import { getLanguageCode } from '../../lib/languages';
 import { clsx } from 'clsx';
 
 const VocabTable: React.FC = () => {
@@ -21,9 +22,7 @@ const VocabTable: React.FC = () => {
     const handleSpeak = (text: string, e: React.MouseEvent) => {
         e.stopPropagation();
         const utterance = new SpeechSynthesisUtterance(text);
-        // Simple language detection/fallback
-        // In a real app, this would come from the study set metadata
-        utterance.lang = 'de-DE';
+        utterance.lang = getLanguageCode(activeSet.targetLanguage);
         window.speechSynthesis.speak(utterance);
     };
 

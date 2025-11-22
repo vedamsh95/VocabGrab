@@ -49,6 +49,7 @@ export interface AnalyzedSentence {
 export interface ReadingContent {
     id: string;
     title: string;
+    targetLanguage: string;
     mode: 'Conversation' | 'Story' | 'News';
     content: AnalyzedSentence[];
 }
