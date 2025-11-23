@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { clsx } from 'clsx';
-import { Sparkles, Key, Globe, AlertCircle, Check, Loader2, Save, RefreshCw, Cpu } from 'lucide-react';
+import { Sparkles, Key, Globe, AlertCircle, Check, Loader2, Save, RefreshCw, Cpu, BookOpen, List, HelpCircle, ChevronDown, ChevronUp } from 'lucide-react';
 import { addStudySet } from '../../lib/storage';
 import { v4 as uuidv4 } from 'uuid';
 import type { StudySet } from '../../types/schema';
@@ -11,6 +11,7 @@ Schema:
 {
   "title": "Topic Name",
   "targetLanguage": "German",
+  "difficulty": "Beginner",
   "vocabulary": [
     { "word": "Apfel", "translation": "Apple", "exampleSentence": "Ich esse einen Apfel.", "grammarTip": "Masculine noun (der Apfel)" }
   ],
@@ -29,6 +30,45 @@ Schema:
 Generate 10-15 vocab items, flashcards, and mixed exercises.
 `;
 
+const SYSTEM_PROMPT_READING = `
+You are a language learning content generator. Output ONLY valid JSON.
+Schema:
+{
+  "title": "Story Title",
+  "targetLanguage": "German",
+  "difficulty": "Intermediate",
+  "readingSections": [
+    {
+      "id": "unique_section_id",
+      "title": "Chapter 1",
+      "targetLanguage": "German",
+      "mode": "Story", // or "Conversation"
+      "content": [
+        {
+          "id": "sent_1",
+          "speaker": "Narrator",
+          "sentence": "Der alte Mann saß auf der Bank.",
+          "translation": "The old man sat on the bench.",
+          "formationNote": "Verb 'saß' is in Präteritum (past tense).",
+          "smartLesson": {
+            "construction": "clause: Subject + Verb + Place",
+            "constructionNote": "Standard main clause word order.",
+            "situation": "Narrative past tense."
+          },
+          "grammarTags": ["Präteritum", "Dative Preposition"],
+          "grammarAnalysis": [
+             { "segment": "Der alte Mann", "color": "blue", "label": "Subject" },
+             { "segment": "saß", "color": "red", "label": "Verb" },
+             { "segment": "auf der Bank", "color": "green", "label": "Place" }
+          ]
+        }
+      ]
+    }
+  ]
+}
+Generate a short story or conversation with 8-12 sentences.
+`;
+
 interface AIGeneratorProps {
     onSuccess: () => void;
 }
@@ -44,9 +84,11 @@ const AIGenerator: React.FC<AIGeneratorProps> = ({ onSuccess }) => {
     const [topic, setTopic] = useState('');
     const [targetLanguage, setTargetLanguage] = useState('German');
     const [difficulty, setDifficulty] = useState('Beginner');
+    const [mode, setMode] = useState<'vocab' | 'reading'>('vocab');
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [generatedJson, setGeneratedJson] = useState<string | null>(null);
+    const [showHelp, setShowHelp] = useState(false);
 
     // Model selection state
     const [models, setModels] = useState<Model[]>([]);
@@ -73,7 +115,6 @@ const AIGenerator: React.FC<AIGeneratorProps> = ({ onSuccess }) => {
         try {
             const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${key}`);
             if (!response.ok) {
-                // Don't block UI on model fetch fail, just fallback
                 console.warn("Failed to fetch models");
                 return;
             }
@@ -84,7 +125,6 @@ const AIGenerator: React.FC<AIGeneratorProps> = ({ onSuccess }) => {
 
             setModels(availableModels);
 
-            // Auto-select best model
             const preferred = availableModels.find((m: any) => m.name.includes('flash')) ||
                 availableModels.find((m: any) => m.name.includes('pro')) ||
                 availableModels[0];
@@ -119,7 +159,6 @@ const AIGenerator: React.FC<AIGeneratorProps> = ({ onSuccess }) => {
             return;
         }
 
-        // Fallback model if list failed
         const modelToUse = selectedModel || 'models/gemini-1.5-flash';
 
         setIsLoading(true);
@@ -128,23 +167,21 @@ const AIGenerator: React.FC<AIGeneratorProps> = ({ onSuccess }) => {
         handleSaveKey();
 
         try {
+            const systemPrompt = mode === 'vocab' ? SYSTEM_PROMPT_VOCAB : SYSTEM_PROMPT_READING;
             const prompt = `
             Topic: ${topic}
             Target Language: ${targetLanguage}
             Difficulty: ${difficulty}
+            Mode: ${mode === 'vocab' ? 'Vocabulary & Exercises' : 'Reading Comprehension / Story'}
             
-            ${SYSTEM_PROMPT_VOCAB}
+            ${systemPrompt}
             `;
 
             const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/${modelToUse}:generateContent?key=${apiKey}`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    contents: [{
-                        parts: [{ text: prompt }]
-                    }]
+                    contents: [{ parts: [{ text: prompt }] }]
                 })
             });
 
@@ -158,17 +195,18 @@ const AIGenerator: React.FC<AIGeneratorProps> = ({ onSuccess }) => {
 
             if (!text) throw new Error("No content generated");
 
-            // Extract JSON from markdown code blocks if present
             const jsonMatch = text.match(/```json\n([\s\S]*?)\n```/) || text.match(/```\n([\s\S]*?)\n```/);
             const jsonString = jsonMatch ? jsonMatch[1] : text;
 
-            // Validate JSON
             const parsed = JSON.parse(jsonString);
-            if (!parsed.title || !parsed.vocabulary) {
+            if (!parsed.title) {
                 throw new Error("Generated JSON is missing required fields");
             }
 
-            setGeneratedJson(jsonString);
+            // Inject difficulty if missing
+            if (!parsed.difficulty) parsed.difficulty = difficulty;
+
+            setGeneratedJson(JSON.stringify(parsed, null, 2));
 
         } catch (err) {
             setError((err as Error).message);
@@ -189,7 +227,8 @@ const AIGenerator: React.FC<AIGeneratorProps> = ({ onSuccess }) => {
                 vocabulary: parsed.vocabulary || [],
                 flashcards: parsed.flashcards || [],
                 exercises: parsed.exercises || { fillInBlanks: [], multipleChoice: [] },
-                readingSections: [] // For now, basic generator only does vocab
+                readingSections: parsed.readingSections || [],
+                difficulty: parsed.difficulty || difficulty
             };
 
             addStudySet(newSet);
@@ -203,6 +242,32 @@ const AIGenerator: React.FC<AIGeneratorProps> = ({ onSuccess }) => {
 
     return (
         <div className="h-full flex flex-col gap-6">
+            {/* Help Guide */}
+            <div className="glass-panel rounded-xl border border-white/10 overflow-hidden">
+                <button
+                    onClick={() => setShowHelp(!showHelp)}
+                    className="w-full flex items-center justify-between p-4 hover:bg-white/5 transition-colors"
+                >
+                    <div className="flex items-center gap-2 text-emerald-400">
+                        <HelpCircle size={18} />
+                        <span className="font-medium text-sm">How to use AI Generator</span>
+                    </div>
+                    {showHelp ? <ChevronUp size={16} className="text-slate-400" /> : <ChevronDown size={16} className="text-slate-400" />}
+                </button>
+
+                {showHelp && (
+                    <div className="p-4 pt-0 text-sm text-slate-400 border-t border-white/5 bg-black/20">
+                        <ol className="list-decimal list-inside space-y-2">
+                            <li><strong>Get a Key:</strong> Go to <a href="https://aistudio.google.com/app/apikey" target="_blank" className="text-emerald-400 hover:underline">Google AI Studio</a> and create a free API key.</li>
+                            <li><strong>Paste Key:</strong> Paste it below. It's stored locally on your device.</li>
+                            <li><strong>Select Mode:</strong> Choose "Vocabulary" for words/flashcards or "Reading" for stories.</li>
+                            <li><strong>Enter Topic:</strong> Be specific! e.g., "Ordering at a French Bakery" or "Business Email Etiquette".</li>
+                            <li><strong>Generate:</strong> Click generate and wait for the magic. Review and import!</li>
+                        </ol>
+                    </div>
+                )}
+            </div>
+
             {/* API Key Section */}
             <div className="glass-panel p-4 rounded-xl border border-white/10 flex flex-col gap-4">
                 <div className="flex items-center gap-4">
@@ -210,7 +275,7 @@ const AIGenerator: React.FC<AIGeneratorProps> = ({ onSuccess }) => {
                         <Key size={20} />
                     </div>
                     <div className="flex-1">
-                        <label className="text-xs text-slate-400 block mb-1">Gemini API Key (Stored Locally)</label>
+                        <label className="text-xs text-slate-400 block mb-1">Gemini API Key</label>
                         <input
                             type="password"
                             value={apiKey}
@@ -220,17 +285,8 @@ const AIGenerator: React.FC<AIGeneratorProps> = ({ onSuccess }) => {
                             className="w-full bg-transparent border-none p-0 text-white focus:ring-0 placeholder:text-slate-600 font-mono text-sm"
                         />
                     </div>
-                    <a
-                        href="https://aistudio.google.com/app/apikey"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-xs text-emerald-400 hover:underline whitespace-nowrap"
-                    >
-                        Get Key &rarr;
-                    </a>
                 </div>
 
-                {/* Model Selector */}
                 {apiKey && (
                     <div className="flex items-center gap-4 pt-4 border-t border-white/5">
                         <div className="p-2 bg-blue-500/20 rounded-lg text-blue-400">
@@ -274,13 +330,35 @@ const AIGenerator: React.FC<AIGeneratorProps> = ({ onSuccess }) => {
             <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-6 min-h-0">
                 {/* Controls */}
                 <div className="glass-panel rounded-2xl p-6 flex flex-col gap-6">
+                    {/* Mode Toggle */}
+                    <div className="flex bg-white/5 p-1 rounded-xl border border-white/10">
+                        <button
+                            onClick={() => setMode('vocab')}
+                            className={clsx(
+                                "flex-1 py-2 rounded-lg text-sm font-medium transition-all flex items-center justify-center gap-2",
+                                mode === 'vocab' ? "bg-emerald-500 text-white shadow-lg" : "text-slate-400 hover:text-white"
+                            )}
+                        >
+                            <List size={16} /> Vocabulary
+                        </button>
+                        <button
+                            onClick={() => setMode('reading')}
+                            className={clsx(
+                                "flex-1 py-2 rounded-lg text-sm font-medium transition-all flex items-center justify-center gap-2",
+                                mode === 'reading' ? "bg-emerald-500 text-white shadow-lg" : "text-slate-400 hover:text-white"
+                            )}
+                        >
+                            <BookOpen size={16} /> Reading
+                        </button>
+                    </div>
+
                     <div>
                         <label className="text-sm text-slate-400 block mb-2">Topic</label>
                         <input
                             type="text"
                             value={topic}
                             onChange={(e) => setTopic(e.target.value)}
-                            placeholder="e.g., Ordering Coffee, Business Meetings, Travel"
+                            placeholder={mode === 'vocab' ? "e.g., Ordering Coffee, Business Meetings" : "e.g., A Mystery Story, News about Tech"}
                             className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-emerald-500/50 transition-colors"
                         />
                     </div>
@@ -347,7 +425,7 @@ const AIGenerator: React.FC<AIGeneratorProps> = ({ onSuccess }) => {
                             ) : (
                                 <>
                                     <Sparkles size={24} />
-                                    Generate Study Set
+                                    Generate {mode === 'vocab' ? 'Vocabulary' : 'Story'}
                                 </>
                             )}
                         </button>

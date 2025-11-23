@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { BookOpen, Upload, Dumbbell, Layers, Save, ArrowRight } from 'lucide-react';
+import { BookOpen, Upload, Dumbbell, Layers, Save, ArrowRight, Sparkles } from 'lucide-react';
 
 const GuidePage: React.FC = () => {
     return (
@@ -13,21 +13,53 @@ const GuidePage: React.FC = () => {
             </header>
 
             <div className="space-y-16">
-                {/* Step 1: Import */}
+                {/* Step 1: AI Generator */}
                 <section className="flex flex-col md:flex-row gap-8 items-center">
+                    <div className="flex-1">
+                        <div className="w-12 h-12 rounded-xl bg-purple-500/20 text-purple-400 flex items-center justify-center mb-4">
+                            <Sparkles size={24} />
+                        </div>
+                        <h2 className="text-2xl font-bold text-white mb-3">1. AI Generator</h2>
+                        <p className="text-slate-400 leading-relaxed mb-4">
+                            Create custom study sets instantly using Google Gemini.
+                        </p>
+                        <ul className="space-y-2 text-slate-300 text-sm">
+                            <li className="flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-purple-500"></span> <strong>Get a Key</strong>: Get a free API key from Google AI Studio.</li>
+                            <li className="flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-purple-500"></span> <strong>Choose Mode</strong>: Select "Vocabulary" for words or "Reading" for stories.</li>
+                            <li className="flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-purple-500"></span> <strong>Enter Topic</strong>: Be specific (e.g., "Ordering Coffee in Paris").</li>
+                            <li className="flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-purple-500"></span> <strong>Generate</strong>: The AI builds a complete lesson for you!</li>
+                        </ul>
+                    </div>
+                    <div className="flex-1 glass-panel p-6 rounded-2xl border border-white/10 bg-gradient-to-br from-purple-900/20 to-slate-900">
+                        <div className="flex items-center gap-2 mb-4">
+                            <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center">
+                                <Sparkles size={16} className="text-purple-400" />
+                            </div>
+                            <div className="text-sm text-white font-bold">AI Generator</div>
+                        </div>
+                        <div className="space-y-3">
+                            <div className="h-2 w-3/4 bg-white/10 rounded-full"></div>
+                            <div className="h-2 w-1/2 bg-white/10 rounded-full"></div>
+                            <div className="h-20 w-full bg-white/5 rounded-xl border border-white/5 mt-4"></div>
+                        </div>
+                    </div>
+                </section>
+
+                {/* Step 2: Import */}
+                <section className="flex flex-col md:flex-row-reverse gap-8 items-center">
                     <div className="flex-1">
                         <div className="w-12 h-12 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center mb-4">
                             <Upload size={24} />
                         </div>
-                        <h2 className="text-2xl font-bold text-white mb-3">1. Import Your Content</h2>
+                        <h2 className="text-2xl font-bold text-white mb-3">2. Import JSON</h2>
                         <p className="text-slate-400 leading-relaxed mb-4">
-                            LangApp doesn't come with pre-made courses. Instead, you use AI (like ChatGPT or Gemini) to generate content exactly for your level and interests.
+                            Prefer ChatGPT? You can still import manually.
                         </p>
                         <ul className="space-y-2 text-slate-300 text-sm">
-                            <li className="flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Go to the <strong>Import Studio</strong>.</li>
+                            <li className="flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Go to <strong>Import JSON</strong>.</li>
                             <li className="flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Copy the <strong>System Prompt</strong>.</li>
-                            <li className="flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Paste it into ChatGPT and ask for a topic (e.g., "German for Travel").</li>
-                            <li className="flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Paste the JSON result back into LangApp.</li>
+                            <li className="flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Paste it into ChatGPT.</li>
+                            <li className="flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Paste the result back here.</li>
                         </ul>
                     </div>
                     <div className="flex-1 glass-panel p-6 rounded-2xl border border-white/10 bg-gradient-to-br from-slate-900 to-slate-800">
@@ -43,13 +75,13 @@ const GuidePage: React.FC = () => {
                     </div>
                 </section>
 
-                {/* Step 2: Learn */}
-                <section className="flex flex-col md:flex-row-reverse gap-8 items-center">
+                {/* Step 3: Learn */}
+                <section className="flex flex-col md:flex-row gap-8 items-center">
                     <div className="flex-1">
                         <div className="w-12 h-12 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center mb-4">
                             <Layers size={24} />
                         </div>
-                        <h2 className="text-2xl font-bold text-white mb-3">2. Master Vocabulary</h2>
+                        <h2 className="text-2xl font-bold text-white mb-3">3. Master Vocabulary</h2>
                         <p className="text-slate-400 leading-relaxed mb-4">
                             Your imported words turn into interactive <strong>Flashcards</strong> and a <strong>Vocabulary Table</strong>.
                         </p>
@@ -68,13 +100,13 @@ const GuidePage: React.FC = () => {
                     </div>
                 </section>
 
-                {/* Step 3: Practice */}
-                <section className="flex flex-col md:flex-row gap-8 items-center">
+                {/* Step 4: Practice */}
+                <section className="flex flex-col md:flex-row-reverse gap-8 items-center">
                     <div className="flex-1">
                         <div className="w-12 h-12 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center mb-4">
                             <Dumbbell size={24} />
                         </div>
-                        <h2 className="text-2xl font-bold text-white mb-3">3. Practice Arena</h2>
+                        <h2 className="text-2xl font-bold text-white mb-3">4. Practice Arena</h2>
                         <p className="text-slate-400 leading-relaxed mb-4">
                             Test your knowledge with auto-generated exercises.
                         </p>
@@ -93,13 +125,13 @@ const GuidePage: React.FC = () => {
                     </div>
                 </section>
 
-                {/* Step 4: Reading Lounge */}
-                <section className="flex flex-col md:flex-row-reverse gap-8 items-center">
+                {/* Step 5: Reading Lounge */}
+                <section className="flex flex-col md:flex-row gap-8 items-center">
                     <div className="flex-1">
                         <div className="w-12 h-12 rounded-xl bg-purple-500/20 text-purple-400 flex items-center justify-center mb-4">
                             <BookOpen size={24} />
                         </div>
-                        <h2 className="text-2xl font-bold text-white mb-3">4. Reading Lounge</h2>
+                        <h2 className="text-2xl font-bold text-white mb-3">5. Reading Lounge</h2>
                         <p className="text-slate-400 leading-relaxed mb-4">
                             Immerse yourself in stories and conversations.
                         </p>
@@ -119,13 +151,13 @@ const GuidePage: React.FC = () => {
                     </div>
                 </section>
 
-                {/* Step 5: Backup */}
-                <section className="flex flex-col md:flex-row gap-8 items-center">
+                {/* Step 6: Backup */}
+                <section className="flex flex-col md:flex-row-reverse gap-8 items-center">
                     <div className="flex-1">
                         <div className="w-12 h-12 rounded-xl bg-slate-700 text-slate-300 flex items-center justify-center mb-4">
                             <Save size={24} />
                         </div>
-                        <h2 className="text-2xl font-bold text-white mb-3">5. Backup Your Data</h2>
+                        <h2 className="text-2xl font-bold text-white mb-3">6. Backup Your Data</h2>
                         <p className="text-slate-400 leading-relaxed mb-4">
                             Your data lives in your browser. To keep it safe:
                         </p>

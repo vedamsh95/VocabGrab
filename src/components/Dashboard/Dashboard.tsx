@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Flame, Trophy, Upload, Play, Calendar } from 'lucide-react';
+import { Flame, Trophy, Upload, Play, Calendar, Sparkles } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { getActiveSet } from '../../lib/storage';
 
@@ -105,9 +105,24 @@ const Dashboard: React.FC = () => {
                     </div>
                 </motion.div>
 
-                {/* Bento Box 3: Quick Import & Guide */}
+                {/* Bento Box 3: Quick Actions */}
                 <div className="flex flex-col gap-6 h-full">
-                    <Link to="/import" className="group flex-1">
+                    {/* AI Generator Tile */}
+                    <Link to="/import?mode=ai" className="group flex-1">
+                        <motion.div
+                            className="glass-card p-6 h-full flex flex-col items-center justify-center text-center relative overflow-hidden"
+                            whileHover={{ scale: 1.02 }}
+                        >
+                            <div className="absolute inset-0 bg-gradient-to-r from-purple-500/0 via-purple-500/10 to-purple-500/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
+                            <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center mb-2 border border-white/10 group-hover:border-purple-500/50 transition-colors">
+                                <Sparkles className="w-5 h-5 text-purple-400" />
+                            </div>
+                            <h3 className="text-white font-semibold text-sm">AI Generator</h3>
+                        </motion.div>
+                    </Link>
+
+                    {/* Import JSON Tile */}
+                    <Link to="/import?mode=json" className="group flex-1">
                         <motion.div
                             className="glass-card p-6 h-full flex flex-col items-center justify-center text-center relative overflow-hidden"
                             whileHover={{ scale: 1.02 }}
@@ -117,19 +132,6 @@ const Dashboard: React.FC = () => {
                                 <Upload className="w-5 h-5 text-emerald-400" />
                             </div>
                             <h3 className="text-white font-semibold text-sm">Import JSON</h3>
-                        </motion.div>
-                    </Link>
-
-                    <Link to="/guide" className="group flex-1">
-                        <motion.div
-                            className="glass-card p-6 h-full flex flex-col items-center justify-center text-center relative overflow-hidden"
-                            whileHover={{ scale: 1.02 }}
-                        >
-                            <div className="absolute inset-0 bg-gradient-to-r from-blue-500/0 via-blue-500/10 to-blue-500/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
-                            <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center mb-2 border border-white/10 group-hover:border-blue-500/50 transition-colors">
-                                <Trophy className="w-5 h-5 text-blue-400" />
-                            </div>
-                            <h3 className="text-white font-semibold text-sm">Setup Guide</h3>
                         </motion.div>
                     </Link>
                 </div>

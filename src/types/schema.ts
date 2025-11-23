@@ -58,6 +58,7 @@ export interface StudySet {
     id: string;
     title: string;
     targetLanguage: string;
+    difficulty?: string;
     vocabulary: VocabItem[];
     flashcards: Flashcard[];
     exercises: {

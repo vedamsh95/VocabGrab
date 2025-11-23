@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { clsx } from 'clsx';
 import { Upload, FileJson, AlertCircle, Check, Copy, BookOpen, List, Sparkles } from 'lucide-react';
 import { addStudySet } from '../../lib/storage';
@@ -77,12 +78,22 @@ Color Rules for grammarAnalysis:
 `;
 
 const JsonImporter: React.FC = () => {
+    const [searchParams] = useSearchParams();
     const [jsonInput, setJsonInput] = useState('');
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState(false);
     const [showSyntax, setShowSyntax] = useState(false);
     const [activeTab, setActiveTab] = useState<'vocab' | 'reading'>('vocab');
     const [mode, setMode] = useState<'json' | 'ai'>('json');
+
+    useEffect(() => {
+        const modeParam = searchParams.get('mode');
+        if (modeParam === 'ai') {
+            setMode('ai');
+        } else {
+            setMode('json');
+        }
+    }, [searchParams]);
 
     const handleImport = () => {
         try {

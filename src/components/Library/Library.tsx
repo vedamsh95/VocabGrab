@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Book, Trash2, Play, Plus, CheckCircle, Download, Upload, HelpCircle, CheckSquare, Square } from 'lucide-react';
+import { Book, Trash2, Play, Plus, Download, Upload, HelpCircle, CheckSquare, Square, BookOpen, List } from 'lucide-react';
 import { getAllSets, getActiveSet, setActiveSetId, deleteStudySet, addStudySet } from '../../lib/storage';
 import type { StudySet } from '../../types/schema';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -37,7 +37,6 @@ const Library: React.FC = () => {
         if (confirm('Are you sure you want to delete this study set?')) {
             deleteStudySet(id);
             loadData();
-            // Remove from selection if deleted
             if (selectedSets.has(id)) {
                 const newSelected = new Set(selectedSets);
                 newSelected.delete(id);
@@ -68,7 +67,7 @@ const Library: React.FC = () => {
         const downloadAnchorNode = document.createElement('a');
         downloadAnchorNode.setAttribute("href", dataStr);
         downloadAnchorNode.setAttribute("download", `langapp_backup_${new Date().toISOString().slice(0, 10)}.json`);
-        document.body.appendChild(downloadAnchorNode); // required for firefox
+        document.body.appendChild(downloadAnchorNode);
         downloadAnchorNode.click();
         downloadAnchorNode.remove();
     };
@@ -84,7 +83,6 @@ const Library: React.FC = () => {
                 if (Array.isArray(importedSets)) {
                     let count = 0;
                     importedSets.forEach((set: StudySet) => {
-                        // Basic validation
                         if (set.id && set.title && set.targetLanguage) {
                             addStudySet(set);
                             count++;
@@ -99,14 +97,13 @@ const Library: React.FC = () => {
                 console.error(err);
                 alert('Failed to parse backup file.');
             }
-            // Reset input
             if (fileInputRef.current) fileInputRef.current.value = '';
         };
         reader.readAsText(file);
     };
 
     return (
-        <div className="p-6 md:p-8 max-w-7xl mx-auto pb-32 relative">
+        <div className="p-6 md:p-8 max-w-[1600px] mx-auto pb-32 relative">
             <header className="mb-8 flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
                 <div>
                     <h1 className="text-3xl font-bold text-white mb-2">My Library</h1>
@@ -206,64 +203,76 @@ const Library: React.FC = () => {
                     </Link>
                 </div>
             ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
                     {sets.map((set) => (
                         <motion.div
                             key={set.id}
                             layoutId={set.id}
                             className={clsx(
-                                "glass-card p-6 relative group cursor-pointer border-2 transition-all",
+                                "glass-card p-4 relative group cursor-pointer border-2 transition-all flex flex-col h-full",
                                 activeSetId === set.id ? 'border-emerald-500/50 bg-emerald-500/5' : 'border-transparent hover:border-white/10',
                                 selectedSets.has(set.id) ? 'ring-2 ring-emerald-500/30' : ''
                             )}
                             onClick={() => handleActivate(set.id)}
                         >
-                            <div className="absolute top-4 right-4 z-10">
+                            <div className="absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
                                 <button
                                     onClick={(e) => toggleSelection(e, set.id)}
                                     className="text-slate-500 hover:text-emerald-400 transition-colors"
                                 >
-                                    {selectedSets.has(set.id) ? <CheckSquare className="text-emerald-400" /> : <Square />}
+                                    {selectedSets.has(set.id) ? <CheckSquare size={16} className="text-emerald-400" /> : <Square size={16} />}
                                 </button>
                             </div>
 
-                            <div className="flex justify-between items-start mb-4">
-                                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-500/20 to-teal-500/20 flex items-center justify-center text-emerald-400">
-                                    <Book className="w-5 h-5" />
+                            <div className="flex justify-between items-start mb-3">
+                                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-500/20 to-teal-500/20 flex items-center justify-center text-emerald-400 text-xs font-bold">
+                                    {set.targetLanguage.substring(0, 2).toUpperCase()}
                                 </div>
                                 {activeSetId === set.id && (
-                                    <div className="flex items-center gap-1 text-xs font-bold text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded-full mr-8">
-                                        <CheckCircle className="w-3 h-3" /> Active
+                                    <div className="flex items-center gap-1 text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full">
+                                        Active
                                     </div>
                                 )}
                             </div>
 
-                            <h3 className="text-xl font-bold text-white mb-1 truncate pr-8">{set.title}</h3>
-                            <p className="text-slate-400 text-sm mb-4">{set.targetLanguage}</p>
+                            <h3 className="text-sm font-bold text-white mb-1 line-clamp-2 leading-tight min-h-[2.5em]">{set.title}</h3>
 
-                            <div className="flex items-center gap-4 text-sm text-slate-500 mb-6">
-                                <span>{set.vocabulary.length} words</span>
-                                <span>•</span>
-                                <span>{set.flashcards.length} cards</span>
+                            {/* Metadata Tags */}
+                            <div className="flex flex-wrap gap-1 mb-3">
+                                {set.difficulty && (
+                                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-white/5 text-slate-400 border border-white/5">
+                                        {set.difficulty}
+                                    </span>
+                                )}
+                                {set.vocabulary.length > 0 && (
+                                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20 flex items-center gap-1">
+                                        <List size={8} /> Vocab
+                                    </span>
+                                )}
+                                {set.readingSections && set.readingSections.length > 0 && (
+                                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-purple-500/10 text-purple-400 border border-purple-500/20 flex items-center gap-1">
+                                        <BookOpen size={8} /> Read
+                                    </span>
+                                )}
                             </div>
 
-                            <div className="flex items-center gap-2 mt-auto">
+                            <div className="mt-auto pt-3 border-t border-white/5 flex items-center gap-2">
                                 <button
                                     onClick={(e) => {
                                         e.stopPropagation();
                                         handleActivate(set.id);
                                         navigate('/dashboard');
                                     }}
-                                    className="flex-1 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-white text-sm font-medium transition-colors flex items-center justify-center gap-2"
+                                    className="flex-1 py-1.5 rounded-md bg-white/5 hover:bg-white/10 text-white text-xs font-medium transition-colors flex items-center justify-center gap-1"
                                 >
-                                    <Play className="w-3 h-3" /> Study
+                                    <Play size={10} /> Study
                                 </button>
                                 <button
                                     onClick={(e) => handleDelete(e, set.id)}
-                                    className="p-2 rounded-lg hover:bg-red-500/20 text-slate-400 hover:text-red-400 transition-colors"
+                                    className="p-1.5 rounded-md hover:bg-red-500/20 text-slate-400 hover:text-red-400 transition-colors"
                                     title="Delete Set"
                                 >
-                                    <Trash2 className="w-4 h-4" />
+                                    <Trash2 size={12} />
                                 </button>
                             </div>
                         </motion.div>
