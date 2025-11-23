@@ -1,14 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { clsx } from 'clsx';
-import { Sparkles, Key, Globe, AlertCircle, Check, Loader2, Save } from 'lucide-react';
+import { Sparkles, Key, Globe, AlertCircle, Check, Loader2, Save, RefreshCw, Cpu } from 'lucide-react';
 import { addStudySet } from '../../lib/storage';
 import { v4 as uuidv4 } from 'uuid';
 import type { StudySet } from '../../types/schema';
 
-// We'll import these from JsonImporter once refactored, or duplicate for now to avoid circular deps if not careful.
-// For now, let's accept them as props or define them here.
-// Actually, best to move prompts to a shared lib file, but for speed, I'll duplicate the constant for now 
-// and we can refactor prompts to a separate file later if needed.
 const SYSTEM_PROMPT_VOCAB = `
 You are a language learning content generator. Output ONLY valid JSON.
 Schema:
@@ -37,6 +33,12 @@ interface AIGeneratorProps {
     onSuccess: () => void;
 }
 
+interface Model {
+    name: string;
+    displayName: string;
+    description: string;
+}
+
 const AIGenerator: React.FC<AIGeneratorProps> = ({ onSuccess }) => {
     const [apiKey, setApiKey] = useState('');
     const [topic, setTopic] = useState('');
@@ -46,14 +48,65 @@ const AIGenerator: React.FC<AIGeneratorProps> = ({ onSuccess }) => {
     const [error, setError] = useState<string | null>(null);
     const [generatedJson, setGeneratedJson] = useState<string | null>(null);
 
+    // Model selection state
+    const [models, setModels] = useState<Model[]>([]);
+    const [selectedModel, setSelectedModel] = useState<string>('');
+    const [isLoadingModels, setIsLoadingModels] = useState(false);
+
     // Load API Key from local storage
     useEffect(() => {
         const storedKey = localStorage.getItem('gemini_api_key');
-        if (storedKey) setApiKey(storedKey);
+        if (storedKey) {
+            setApiKey(storedKey);
+            fetchModels(storedKey);
+        }
     }, []);
 
     const handleSaveKey = () => {
         localStorage.setItem('gemini_api_key', apiKey);
+    };
+
+    const fetchModels = async (key: string) => {
+        if (!key) return;
+        setIsLoadingModels(true);
+        setError(null);
+        try {
+            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${key}`);
+            if (!response.ok) {
+                // Don't block UI on model fetch fail, just fallback
+                console.warn("Failed to fetch models");
+                return;
+            }
+            const data = await response.json();
+            const availableModels = data.models?.filter((m: any) =>
+                m.supportedGenerationMethods?.includes('generateContent')
+            ) || [];
+
+            setModels(availableModels);
+
+            // Auto-select best model
+            const preferred = availableModels.find((m: any) => m.name.includes('flash')) ||
+                availableModels.find((m: any) => m.name.includes('pro')) ||
+                availableModels[0];
+
+            if (preferred) setSelectedModel(preferred.name);
+
+        } catch (err) {
+            console.error("Error fetching models:", err);
+        } finally {
+            setIsLoadingModels(false);
+        }
+    };
+
+    const handleKeyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setApiKey(e.target.value);
+    };
+
+    const handleKeyBlur = () => {
+        handleSaveKey();
+        if (apiKey && models.length === 0) {
+            fetchModels(apiKey);
+        }
     };
 
     const handleGenerate = async () => {
@@ -66,10 +119,13 @@ const AIGenerator: React.FC<AIGeneratorProps> = ({ onSuccess }) => {
             return;
         }
 
+        // Fallback model if list failed
+        const modelToUse = selectedModel || 'models/gemini-1.5-flash';
+
         setIsLoading(true);
         setError(null);
         setGeneratedJson(null);
-        handleSaveKey(); // Auto-save key on generate
+        handleSaveKey();
 
         try {
             const prompt = `
@@ -80,7 +136,7 @@ const AIGenerator: React.FC<AIGeneratorProps> = ({ onSuccess }) => {
             ${SYSTEM_PROMPT_VOCAB}
             `;
 
-            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-001:generateContent?key=${apiKey}`, {
+            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/${modelToUse}:generateContent?key=${apiKey}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -148,28 +204,71 @@ const AIGenerator: React.FC<AIGeneratorProps> = ({ onSuccess }) => {
     return (
         <div className="h-full flex flex-col gap-6">
             {/* API Key Section */}
-            <div className="glass-panel p-4 rounded-xl border border-white/10 flex items-center gap-4">
-                <div className="p-2 bg-emerald-500/20 rounded-lg text-emerald-400">
-                    <Key size={20} />
+            <div className="glass-panel p-4 rounded-xl border border-white/10 flex flex-col gap-4">
+                <div className="flex items-center gap-4">
+                    <div className="p-2 bg-emerald-500/20 rounded-lg text-emerald-400">
+                        <Key size={20} />
+                    </div>
+                    <div className="flex-1">
+                        <label className="text-xs text-slate-400 block mb-1">Gemini API Key (Stored Locally)</label>
+                        <input
+                            type="password"
+                            value={apiKey}
+                            onChange={handleKeyChange}
+                            onBlur={handleKeyBlur}
+                            placeholder="Paste your Google Gemini API Key here"
+                            className="w-full bg-transparent border-none p-0 text-white focus:ring-0 placeholder:text-slate-600 font-mono text-sm"
+                        />
+                    </div>
+                    <a
+                        href="https://aistudio.google.com/app/apikey"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs text-emerald-400 hover:underline whitespace-nowrap"
+                    >
+                        Get Key &rarr;
+                    </a>
                 </div>
-                <div className="flex-1">
-                    <label className="text-xs text-slate-400 block mb-1">Gemini API Key (Stored Locally)</label>
-                    <input
-                        type="password"
-                        value={apiKey}
-                        onChange={(e) => setApiKey(e.target.value)}
-                        placeholder="Paste your Google Gemini API Key here"
-                        className="w-full bg-transparent border-none p-0 text-white focus:ring-0 placeholder:text-slate-600 font-mono text-sm"
-                    />
-                </div>
-                <a
-                    href="https://aistudio.google.com/app/apikey"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-xs text-emerald-400 hover:underline whitespace-nowrap"
-                >
-                    Get Key &rarr;
-                </a>
+
+                {/* Model Selector */}
+                {apiKey && (
+                    <div className="flex items-center gap-4 pt-4 border-t border-white/5">
+                        <div className="p-2 bg-blue-500/20 rounded-lg text-blue-400">
+                            <Cpu size={20} />
+                        </div>
+                        <div className="flex-1">
+                            <label className="text-xs text-slate-400 block mb-1">AI Model</label>
+                            {isLoadingModels ? (
+                                <div className="flex items-center gap-2 text-xs text-slate-500">
+                                    <Loader2 size={12} className="animate-spin" />
+                                    Fetching available models...
+                                </div>
+                            ) : models.length > 0 ? (
+                                <select
+                                    value={selectedModel}
+                                    onChange={(e) => setSelectedModel(e.target.value)}
+                                    className="w-full bg-transparent border-none p-0 text-white focus:ring-0 font-mono text-sm cursor-pointer"
+                                >
+                                    {models.map(m => (
+                                        <option key={m.name} value={m.name} className="bg-[#0a0c14]">
+                                            {m.displayName || m.name.replace('models/', '')}
+                                        </option>
+                                    ))}
+                                </select>
+                            ) : (
+                                <div className="flex items-center justify-between">
+                                    <span className="text-xs text-slate-500">Default: gemini-1.5-flash</span>
+                                    <button
+                                        onClick={() => fetchModels(apiKey)}
+                                        className="text-xs text-blue-400 hover:text-blue-300 flex items-center gap-1"
+                                    >
+                                        <RefreshCw size={10} /> Check Models
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                )}
             </div>
 
             <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-6 min-h-0">
