@@ -373,15 +373,15 @@ const AIGenerator: React.FC<AIGeneratorProps> = ({ onSuccess }) => {
                                     onChange={(e) => setTargetLanguage(e.target.value)}
                                     className="w-full bg-white/5 border border-white/10 rounded-xl pl-10 pr-4 py-3 text-white focus:outline-none focus:border-emerald-500/50 appearance-none"
                                 >
-                                    <option value="German">German</option>
-                                    <option value="Spanish">Spanish</option>
-                                    <option value="French">French</option>
-                                    <option value="Italian">Italian</option>
-                                    <option value="Japanese">Japanese</option>
-                                    <option value="Chinese">Chinese</option>
-                                    <option value="Korean">Korean</option>
-                                    <option value="Russian">Russian</option>
-                                    <option value="Portuguese">Portuguese</option>
+                                    <option value="German" className="bg-slate-900">German</option>
+                                    <option value="Spanish" className="bg-slate-900">Spanish</option>
+                                    <option value="French" className="bg-slate-900">French</option>
+                                    <option value="Italian" className="bg-slate-900">Italian</option>
+                                    <option value="Japanese" className="bg-slate-900">Japanese</option>
+                                    <option value="Chinese" className="bg-slate-900">Chinese</option>
+                                    <option value="Korean" className="bg-slate-900">Korean</option>
+                                    <option value="Russian" className="bg-slate-900">Russian</option>
+                                    <option value="Portuguese" className="bg-slate-900">Portuguese</option>
                                 </select>
                             </div>
                         </div>
@@ -392,9 +392,9 @@ const AIGenerator: React.FC<AIGeneratorProps> = ({ onSuccess }) => {
                                 onChange={(e) => setDifficulty(e.target.value)}
                                 className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-emerald-500/50 appearance-none"
                             >
-                                <option value="Beginner">Beginner (A1-A2)</option>
-                                <option value="Intermediate">Intermediate (B1-B2)</option>
-                                <option value="Advanced">Advanced (C1-C2)</option>
+                                <option value="Beginner" className="bg-slate-900">Beginner (A1-A2)</option>
+                                <option value="Intermediate" className="bg-slate-900">Intermediate (B1-B2)</option>
+                                <option value="Advanced" className="bg-slate-900">Advanced (C1-C2)</option>
                             </select>
                         </div>
                     </div>

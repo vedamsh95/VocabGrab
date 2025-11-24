@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { clsx } from 'clsx';
-import { BookOpen, MessageCircle, Newspaper, Info, X, Eye, EyeOff, Play, Pause, Loader2 } from 'lucide-react';
+import { BookOpen, MessageCircle, Newspaper, Info, X, Eye, EyeOff, Play, Pause, Loader2, Check } from 'lucide-react';
 import { TranslationClient } from '../../lib/translationClient';
 import type { ReadingContent, AnalyzedSentence } from '../../types/schema';
 
 import { useReadStore } from '../../store/useReadStore';
+import { useProgressStore } from '../../store/useProgressStore';
 import { getLanguageCode, getBestVoice } from '../../lib/languages';
 
 interface ReadingLoungeProps {
@@ -295,6 +296,20 @@ const ReadingLounge: React.FC<ReadingLoungeProps> = ({ content }) => {
                             )}
                         </div>
                     ))}
+
+                    {/* Finish Button */}
+                    <div className="mt-12 mb-8 flex justify-center">
+                        <button
+                            onClick={() => {
+                                useProgressStore.getState().addXP(50);
+                                alert("Story Completed! +50 XP");
+                            }}
+                            className="px-8 py-4 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-xl font-bold text-white shadow-lg hover:scale-105 transition-transform flex items-center gap-2"
+                        >
+                            <Check size={24} />
+                            Finish Story (+50 XP)
+                        </button>
+                    </div>
                 </div>
             </div>
 

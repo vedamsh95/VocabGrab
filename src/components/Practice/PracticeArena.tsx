@@ -7,9 +7,12 @@ import ClozeInput from './ClozeInput';
 import ChoiceGroup from './ChoiceGroup';
 import { motion } from 'framer-motion';
 
+import { useProgressStore } from '../../store/useProgressStore';
+
 const PracticeArena: React.FC = () => {
     const activeSet = getActiveSet();
     const [progress, setProgress] = useState(0);
+    const addXP = useProgressStore(state => state.addXP);
 
     if (!activeSet) {
         return (
@@ -26,10 +29,9 @@ const PracticeArena: React.FC = () => {
     const totalQuestions = fillInBlanks.length + multipleChoice.length;
 
     const handleQuestionComplete = (isCorrect: boolean) => {
-        // Simple progress tracking for now
-        // In a real app, we'd track specific question IDs
         if (isCorrect) {
             setProgress(prev => Math.min(prev + 1, totalQuestions));
+            addXP(10); // Award 10 XP for correct answer
         }
     };
 

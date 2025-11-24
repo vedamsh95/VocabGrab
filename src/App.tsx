@@ -10,7 +10,16 @@ import Library from './components/Library/Library';
 import ReadingPage from './components/Reading/ReadingPage';
 import GuidePage from './components/Guide/GuidePage';
 
+import { useEffect } from 'react';
+import { useProgressStore } from './store/useProgressStore';
+
 function App() {
+  const checkStreak = useProgressStore(state => state.checkStreak);
+
+  useEffect(() => {
+    checkStreak();
+  }, [checkStreak]);
+
   return (
     <Router>
       <AppLayout>

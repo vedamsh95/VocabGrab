@@ -6,13 +6,24 @@ import { getActiveSet } from '../../lib/storage';
 
 import Logo from '../../assets/Logo.png';
 
+import { useProgressStore } from '../../store/useProgressStore';
+
 const Dashboard: React.FC = () => {
     const activeSet = getActiveSet();
+    const { streak, learnedWords, getWeeklyActivity } = useProgressStore();
 
-    // Mock data for heatmap
-    const days = Array.from({ length: 28 }, () => ({
-        level: Math.random() > 0.7 ? 2 : Math.random() > 0.4 ? 1 : 0
+    // Get last 7 days activity (normalized for visualization)
+    const weeklyActivity = getWeeklyActivity();
+    // const maxActivity = Math.max(...weeklyActivity, 100); // Scale based on max or at least 100 XP
+
+    // Map activity to heatmap levels (0-2)
+    const days = weeklyActivity.map(amount => ({
+        level: amount > 50 ? 2 : amount > 0 ? 1 : 0
     }));
+
+    // Fill remaining days to keep grid look (optional, or just show 7 days)
+    // For now let's just show the last 7 days in the grid
+    const displayDays = Array.from({ length: 21 }, () => ({ level: 0 })).concat(days);
 
     return (
         <div className="p-6 md:p-8 max-w-7xl mx-auto">
@@ -46,7 +57,7 @@ const Dashboard: React.FC = () => {
                     </div>
 
                     <div className="flex gap-2 mt-8 flex-wrap z-10">
-                        {days.map((day, index) => (
+                        {displayDays.map((day, index) => (
                             <div
                                 key={index}
                                 className={`w-8 h-8 rounded-lg transition-colors duration-500 ${day.level === 2 ? 'bg-emerald-500 shadow-lg shadow-emerald-500/20' :
@@ -145,7 +156,7 @@ const Dashboard: React.FC = () => {
                         <Flame className="w-5 h-5 fill-current" />
                     </div>
                     <div>
-                        <div className="text-3xl font-bold text-white">12</div>
+                        <div className="text-3xl font-bold text-white">{streak.count}</div>
                         <div className="text-xs text-slate-400 uppercase tracking-wider">Day Streak</div>
                     </div>
                 </motion.div>
@@ -160,7 +171,7 @@ const Dashboard: React.FC = () => {
                     </div>
                     <div>
                         <div className="text-3xl font-bold text-white">
-                            {activeSet ? activeSet.vocabulary.length : 0}
+                            {learnedWords.length}
                         </div>
                         <div className="text-xs text-slate-400 uppercase tracking-wider">Words Learned</div>
                     </div>
