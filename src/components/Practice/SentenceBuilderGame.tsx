@@ -9,16 +9,20 @@ interface SentenceBuilderGameProps {
     vocabulary: VocabItem[];
 }
 
+interface WordObj {
+    id: string;
+    text: string;
+}
+
 const SentenceBuilderGame: React.FC<SentenceBuilderGameProps> = ({ vocabulary }) => {
     const [currentSentence, setCurrentSentence] = useState<VocabItem | null>(null);
-    const [availableWords, setAvailableWords] = useState<string[]>([]);
-    const [builtSentence, setBuiltSentence] = useState<string[]>([]);
+    const [availableWords, setAvailableWords] = useState<WordObj[]>([]);
+    const [builtSentence, setBuiltSentence] = useState<WordObj[]>([]);
     const [status, setStatus] = useState<'playing' | 'correct' | 'incorrect'>('playing');
     const [showAnswer, setShowAnswer] = useState(false);
     const addXP = useProgressStore(state => state.addXP);
 
     const loadNewSentence = () => {
-        // Filter items that have example sentences
         const candidates = vocabulary.filter(v => v.exampleSentence && v.exampleSentence.length > 10);
         if (candidates.length === 0) return;
 
@@ -26,16 +30,18 @@ const SentenceBuilderGame: React.FC<SentenceBuilderGameProps> = ({ vocabulary })
         setCurrentSentence(randomItem);
         setShowAnswer(false);
 
-        // Tokenize and shuffle
-        // Keep punctuation attached to words for the blocks, or strip it?
-        // User wants to build the sentence. Usually blocks have punctuation or it's ignored.
-        // Let's strip punctuation for the BLOCKS to make it cleaner, but we need to match against the stripped target.
-        const words = randomItem.exampleSentence!
+        const rawWords = randomItem.exampleSentence!
             .replace(/[.,/#!$%^&*;:{}=\-_`~()]/g, "")
             .split(/\s+/)
             .filter((w: string) => w.length > 0);
 
-        setAvailableWords(words.sort(() => 0.5 - Math.random()));
+        // Create unique objects for each word instance
+        const wordObjects: WordObj[] = rawWords.map((w, i) => ({
+            id: `word-${i}-${Math.random().toString(36).substr(2, 9)}`,
+            text: w
+        }));
+
+        setAvailableWords(wordObjects.sort(() => 0.5 - Math.random()));
         setBuiltSentence([]);
         setStatus('playing');
     };
@@ -44,19 +50,19 @@ const SentenceBuilderGame: React.FC<SentenceBuilderGameProps> = ({ vocabulary })
         loadNewSentence();
     }, [vocabulary]);
 
-    const handleWordClick = (word: string, index: number, from: 'pool' | 'built') => {
+    const handleWordClick = (wordObj: WordObj, index: number, from: 'pool' | 'built') => {
         if (status === 'correct') return;
 
         if (from === 'pool') {
             const newPool = [...availableWords];
             newPool.splice(index, 1);
             setAvailableWords(newPool);
-            setBuiltSentence([...builtSentence, word]);
+            setBuiltSentence([...builtSentence, wordObj]);
         } else {
             const newBuilt = [...builtSentence];
             newBuilt.splice(index, 1);
             setBuiltSentence(newBuilt);
-            setAvailableWords([...availableWords, word]);
+            setAvailableWords([...availableWords, wordObj]);
         }
         setStatus('playing');
     };
@@ -70,7 +76,7 @@ const SentenceBuilderGame: React.FC<SentenceBuilderGameProps> = ({ vocabulary })
             .split(/\s+/)
             .join(' ');
 
-        const attempt = builtSentence.join(' ').toLowerCase();
+        const attempt = builtSentence.map(w => w.text).join(' ').toLowerCase();
 
         if (attempt === target) {
             setStatus('correct');
@@ -82,7 +88,7 @@ const SentenceBuilderGame: React.FC<SentenceBuilderGameProps> = ({ vocabulary })
 
     const revealAnswer = () => {
         setShowAnswer(true);
-        setStatus('incorrect'); // Mark as incorrect if revealed
+        setStatus('incorrect');
     };
 
     if (!currentSentence) {
@@ -111,14 +117,14 @@ const SentenceBuilderGame: React.FC<SentenceBuilderGameProps> = ({ vocabulary })
                     {builtSentence.length === 0 && (
                         <span className="text-slate-500 text-sm">Tap words to build the sentence</span>
                     )}
-                    {builtSentence.map((word, i) => (
+                    {builtSentence.map((wordObj, i) => (
                         <motion.button
-                            layoutId={`word-${word}-${i}`}
-                            key={`built-${i}`}
-                            onClick={() => handleWordClick(word, i, 'built')}
+                            layoutId={wordObj.id}
+                            key={wordObj.id}
+                            onClick={() => handleWordClick(wordObj, i, 'built')}
                             className="px-3 py-1.5 bg-white text-slate-900 rounded-lg font-medium shadow-lg hover:bg-slate-200"
                         >
-                            {word}
+                            {wordObj.text}
                         </motion.button>
                     ))}
                 </div>
@@ -144,14 +150,14 @@ const SentenceBuilderGame: React.FC<SentenceBuilderGameProps> = ({ vocabulary })
 
             {/* Word Pool */}
             <div className="flex flex-wrap gap-3 justify-center mb-8">
-                {availableWords.map((word, i) => (
+                {availableWords.map((wordObj, i) => (
                     <motion.button
-                        layoutId={`word-${word}-${i}`}
-                        key={`pool-${i}`}
-                        onClick={() => handleWordClick(word, i, 'pool')}
+                        layoutId={wordObj.id}
+                        key={wordObj.id}
+                        onClick={() => handleWordClick(wordObj, i, 'pool')}
                         className="px-3 py-1.5 bg-white/10 text-white rounded-lg font-medium hover:bg-white/20 border border-white/10"
                     >
-                        {word}
+                        {wordObj.text}
                     </motion.button>
                 ))}
             </div>
