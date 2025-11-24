@@ -242,6 +242,47 @@ const AIGenerator: React.FC<AIGeneratorProps> = ({ onSuccess }) => {
 
     return (
         <div className="h-full flex flex-col gap-6">
+
+            {/* Promo Tile */}
+            <div className="glass-card p-8 rounded-3xl relative overflow-hidden border border-purple-500/30">
+                <div className="absolute inset-0 bg-gradient-to-br from-purple-900/40 to-black/60 z-0" />
+                <div className="absolute top-0 right-0 p-8 opacity-20">
+                    <Sparkles size={120} className="text-purple-400" />
+                </div>
+
+                <div className="relative z-10">
+                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/20 border border-purple-500/30 text-purple-300 text-xs font-bold uppercase tracking-wider mb-4">
+                        <Sparkles size={12} />
+                        Powered by Gemini
+                    </div>
+                    <h2 className="text-3xl font-bold text-white mb-4">
+                        Generate Unlimited Study Sets <span className="text-purple-400">For Free</span>
+                    </h2>
+                    <p className="text-slate-300 mb-6 max-w-lg">
+                        Use your own Gemini API key to create custom vocabulary lists, stories, and grammar lessons instantly. No subscription required.
+                    </p>
+
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="flex items-center gap-2 text-sm text-slate-300">
+                            <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                            Context-Aware Definitions
+                        </div>
+                        <div className="flex items-center gap-2 text-sm text-slate-300">
+                            <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                            Smart Example Sentences
+                        </div>
+                        <div className="flex items-center gap-2 text-sm text-slate-300">
+                            <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                            Grammar Tips Included
+                        </div>
+                        <div className="flex items-center gap-2 text-sm text-slate-300">
+                            <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                            Instant Generation
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             {/* Help Guide */}
             <div className="glass-panel rounded-xl border border-white/10 overflow-hidden">
                 <button

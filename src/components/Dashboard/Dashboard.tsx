@@ -1,22 +1,22 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Flame, Trophy, BookOpen, Play, Plus, ArrowRight, Zap, LayoutGrid } from 'lucide-react';
+import { Flame, Trophy, BookOpen, Play, ArrowRight, Zap, LayoutGrid, Upload, Sparkles } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { getActiveSet, getAllSets } from '../../lib/storage';
 import type { StudySet } from '../../types/schema';
 import { useProgressStore } from '../../store/useProgressStore';
 
-// Floating Letters Component
+// Floating Letters Component (Background)
 const FloatingLetters = () => {
-    const characters = ['A', 'あ', '文', 'Ñ', 'ç', 'ẞ', '你', 'Ω', 'Ж', 'த', 'é', 'ü', 'å', 'ø'];
-    const colors = ['text-emerald-500/20', 'text-blue-500/20', 'text-purple-500/20', 'text-orange-500/20', 'text-pink-500/20'];
+    const characters = ['A', 'あ', '文', 'Ñ', 'ç', 'ẞ', '你', 'Ω', 'Ж', 'த', 'é', 'ü', 'å', 'ø', '☕', '🚀', '⭐'];
+    const colors = ['text-emerald-500/10', 'text-blue-500/10', 'text-purple-500/10', 'text-orange-500/10', 'text-pink-500/10'];
 
     return (
         <div className="absolute inset-0 overflow-hidden pointer-events-none select-none">
-            {Array.from({ length: 15 }).map((_, i) => (
+            {Array.from({ length: 40 }).map((_, i) => (
                 <motion.div
                     key={i}
-                    className={`absolute font-bold text-4xl ${colors[Math.floor(Math.random() * colors.length)]}`}
+                    className={`absolute font-bold text-2xl md:text-4xl ${colors[Math.floor(Math.random() * colors.length)]}`}
                     initial={{
                         x: Math.random() * 100 + '%',
                         y: Math.random() * 100 + '%',
@@ -26,17 +26,55 @@ const FloatingLetters = () => {
                     }}
                     animate={{
                         y: [null, Math.random() * -100],
-                        opacity: [0, 1, 0],
+                        opacity: [0, 0.8, 0],
                         rotate: [null, Math.random() * 360]
                     }}
                     transition={{
-                        duration: Math.random() * 10 + 10,
+                        duration: Math.random() * 20 + 10,
                         repeat: Infinity,
                         ease: "linear",
-                        delay: Math.random() * 5
+                        delay: Math.random() * 10
                     }}
                 >
                     {characters[Math.floor(Math.random() * characters.length)]}
+                </motion.div>
+            ))}
+        </div>
+    );
+};
+
+// Cursor Follower Component
+const CursorLetters = () => {
+    const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+    const characters = ['A', 'あ', '文', 'Ñ', 'Ω'];
+
+    useEffect(() => {
+        const handleMouseMove = (e: MouseEvent) => {
+            setMousePos({ x: e.clientX, y: e.clientY });
+        };
+        window.addEventListener('mousemove', handleMouseMove);
+        return () => window.removeEventListener('mousemove', handleMouseMove);
+    }, []);
+
+    return (
+        <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+            {characters.map((char, i) => (
+                <motion.div
+                    key={i}
+                    className="absolute text-emerald-500/20 font-bold text-xl"
+                    animate={{
+                        x: mousePos.x + Math.cos(Date.now() / 1000 + i) * 50,
+                        y: mousePos.y + Math.sin(Date.now() / 1000 + i) * 50,
+                        opacity: [0.2, 0.5, 0.2],
+                    }}
+                    transition={{
+                        type: "spring",
+                        damping: 10,
+                        stiffness: 50,
+                        opacity: { duration: 2, repeat: Infinity }
+                    }}
+                >
+                    {char}
                 </motion.div>
             ))}
         </div>
@@ -62,10 +100,11 @@ const Dashboard: React.FC = () => {
     const maxActivity = Math.max(...weeklyActivity, 10); // Avoid divide by zero
 
     return (
-        <div className="p-6 md:p-8 max-w-7xl mx-auto space-y-8">
+        <div className="p-6 md:p-8 max-w-7xl mx-auto space-y-8 relative">
+            <CursorLetters />
 
             {/* 1. HERO SECTION */}
-            <section className="relative rounded-3xl overflow-hidden glass-card min-h-[300px] flex items-center justify-center text-center p-8 border border-white/10 shadow-2xl">
+            <section className="relative rounded-3xl overflow-hidden glass-card min-h-[350px] flex items-center justify-center text-center p-8 border border-white/10 shadow-2xl group">
                 <FloatingLetters />
 
                 <div className="relative z-10 max-w-3xl">
@@ -96,14 +135,21 @@ const Dashboard: React.FC = () => {
                         initial={{ opacity: 0, scale: 0.9 }}
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ delay: 0.8 }}
-                        className="flex justify-center gap-4"
+                        className="flex flex-wrap justify-center gap-4"
                     >
                         <button
-                            onClick={() => navigate('/import')}
-                            className="btn-primary px-8 py-3 text-lg flex items-center gap-2 shadow-lg shadow-emerald-500/20"
+                            onClick={() => navigate('/import?mode=json')}
+                            className="btn-primary px-8 py-3 text-lg flex items-center gap-2 shadow-lg shadow-emerald-500/20 bg-slate-700 hover:bg-slate-600 border-slate-600"
                         >
-                            <Plus size={20} />
-                            Create New Set
+                            <Upload size={20} />
+                            Import Your Set
+                        </button>
+                        <button
+                            onClick={() => navigate('/import?mode=ai')}
+                            className="btn-primary px-8 py-3 text-lg flex items-center gap-2 shadow-lg shadow-purple-500/20 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 border-none"
+                        >
+                            <Sparkles size={20} />
+                            AI Generated
                         </button>
                     </motion.div>
                 </div>
@@ -111,7 +157,6 @@ const Dashboard: React.FC = () => {
                 {/* Background Gradient Mesh */}
                 <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-transparent via-black/20 to-black/60 z-0" />
             </section>
-
 
             {/* 2. STATS ROW */}
             <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -256,11 +301,14 @@ const Dashboard: React.FC = () => {
 
                 {/* Quick Practice */}
                 <div className="glass-card p-1">
-                    <div className="p-5 border-b border-white/5">
+                    <div className="p-5 border-b border-white/5 flex justify-between items-center">
                         <h3 className="text-white font-semibold flex items-center gap-2">
                             <Zap size={18} className="text-yellow-400" />
                             Quick Actions
                         </h3>
+                        <button className="text-xs text-slate-400 hover:text-white transition-colors">
+                            Customize
+                        </button>
                     </div>
                     <div className="p-6 grid grid-cols-2 gap-3">
                         <Link
@@ -271,11 +319,11 @@ const Dashboard: React.FC = () => {
                             <span className="text-xs font-bold text-purple-300">AI Gen</span>
                         </Link>
                         <Link
-                            to="/flashcards"
-                            className="flex flex-col items-center justify-center p-4 rounded-xl bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/20 transition-all group"
+                            to="/import?mode=json"
+                            className="flex flex-col items-center justify-center p-4 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 transition-all group"
                         >
-                            <LayoutGrid size={24} className="text-blue-400 mb-2 group-hover:scale-110 transition-transform" />
-                            <span className="text-xs font-bold text-blue-300">Flashcards</span>
+                            <Upload size={24} className="text-emerald-400 mb-2 group-hover:scale-110 transition-transform" />
+                            <span className="text-xs font-bold text-emerald-300">Import Set</span>
                         </Link>
                     </div>
                 </div>
