@@ -7,12 +7,9 @@ import ClozeInput from './ClozeInput';
 import ChoiceGroup from './ChoiceGroup';
 import { motion } from 'framer-motion';
 
-import SmartSpeakingLab from './SmartSpeakingLab';
-
 const PracticeArena: React.FC = () => {
     const activeSet = getActiveSet();
     const [progress, setProgress] = useState(0);
-    const [activeTab, setActiveTab] = useState<'exercises' | 'speaking'>('exercises');
 
     if (!activeSet) {
         return (
@@ -69,96 +66,74 @@ const PracticeArena: React.FC = () => {
                 </div>
             </header>
 
-            {/* Tab Navigation */}
-            <div className="flex justify-center mb-8">
-                <div className="bg-white/5 p-1 rounded-xl flex gap-1">
-                    <button
-                        onClick={() => setActiveTab('exercises')}
-                        className={`px-6 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'exercises' ? 'bg-emerald-500 text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}
-                    >
-                        Exercises
-                    </button>
-                    <button
-                        onClick={() => setActiveTab('speaking')}
-                        className={`px-6 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'speaking' ? 'bg-purple-500 text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}
-                    >
-                        Speaking Lab
-                    </button>
-                </div>
-            </div>
+            <div className="space-y-12">
 
-            {activeTab === 'speaking' ? (
-                <SmartSpeakingLab />
-            ) : (
-                <div className="space-y-12">
-
-                    {/* Section 1: Fill in the Blanks */}
-                    {fillInBlanks.length > 0 && (
-                        <section>
-                            <h2 className="text-lg font-bold text-emerald-400 mb-6 flex items-center gap-2">
-                                <span className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-sm">1</span>
-                                Fill in the Blanks
-                            </h2>
-                            <div className="space-y-6">
-                                {fillInBlanks.map((ex, i) => {
-                                    // Split question by "___" to insert input
-                                    const parts = ex.question.split('___');
-                                    return (
-                                        <motion.div
-                                            key={ex.id}
-                                            initial={{ opacity: 0, y: 20 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            transition={{ delay: i * 0.1 }}
-                                            className="glass-card p-6 border-l-4 border-l-emerald-500/50"
-                                        >
-                                            <div className="flex items-baseline flex-wrap gap-1 text-lg leading-relaxed">
-                                                <span className="text-slate-400 font-mono text-sm mr-2">{i + 1}.</span>
-                                                <SmartSentence sentence={parts[0]} />
-                                                <ClozeInput answer={ex.answer} onComplete={handleQuestionComplete} />
-                                                {parts[1] && <SmartSentence sentence={parts[1]} />}
-                                            </div>
-                                        </motion.div>
-                                    );
-                                })}
-                            </div>
-                        </section>
-                    )}
-
-                    {/* Section 2: Multiple Choice */}
-                    {multipleChoice.length > 0 && (
-                        <section>
-                            <h2 className="text-lg font-bold text-emerald-400 mb-6 flex items-center gap-2">
-                                <span className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-sm">2</span>
-                                Multiple Choice
-                            </h2>
-                            <div className="space-y-6">
-                                {multipleChoice.map((ex, i) => (
+                {/* Section 1: Fill in the Blanks */}
+                {fillInBlanks.length > 0 && (
+                    <section>
+                        <h2 className="text-lg font-bold text-emerald-400 mb-6 flex items-center gap-2">
+                            <span className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-sm">1</span>
+                            Fill in the Blanks
+                        </h2>
+                        <div className="space-y-6">
+                            {fillInBlanks.map((ex, i) => {
+                                // Split question by "___" to insert input
+                                const parts = ex.question.split('___');
+                                return (
                                     <motion.div
                                         key={ex.id}
                                         initial={{ opacity: 0, y: 20 }}
                                         animate={{ opacity: 1, y: 0 }}
-                                        transition={{ delay: (fillInBlanks.length + i) * 0.1 }}
-                                        className="glass-card p-6 border-l-4 border-l-blue-500/50"
+                                        transition={{ delay: i * 0.1 }}
+                                        className="glass-card p-6 border-l-4 border-l-emerald-500/50"
                                     >
-                                        <div className="flex items-start gap-3">
-                                            <span className="text-slate-400 font-mono text-sm mt-1">{fillInBlanks.length + i + 1}.</span>
-                                            <div className="flex-1">
-                                                <SmartSentence sentence={ex.question} className="mb-4" />
-                                                <ChoiceGroup
-                                                    options={ex.options}
-                                                    correctAnswer={ex.answer}
-                                                    onComplete={handleQuestionComplete}
-                                                />
-                                            </div>
+                                        <div className="flex items-baseline flex-wrap gap-1 text-lg leading-relaxed">
+                                            <span className="text-slate-400 font-mono text-sm mr-2">{i + 1}.</span>
+                                            <SmartSentence sentence={parts[0]} />
+                                            <ClozeInput answer={ex.answer} onComplete={handleQuestionComplete} />
+                                            {parts[1] && <SmartSentence sentence={parts[1]} />}
                                         </div>
                                     </motion.div>
-                                ))}
-                            </div>
-                        </section>
-                    )}
+                                );
+                            })}
+                        </div>
+                    </section>
+                )}
 
-                </div>
-            )}
+                {/* Section 2: Multiple Choice */}
+                {multipleChoice.length > 0 && (
+                    <section>
+                        <h2 className="text-lg font-bold text-emerald-400 mb-6 flex items-center gap-2">
+                            <span className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-sm">2</span>
+                            Multiple Choice
+                        </h2>
+                        <div className="space-y-6">
+                            {multipleChoice.map((ex, i) => (
+                                <motion.div
+                                    key={ex.id}
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: (fillInBlanks.length + i) * 0.1 }}
+                                    className="glass-card p-6 border-l-4 border-l-blue-500/50"
+                                >
+                                    <div className="flex items-start gap-3">
+                                        <span className="text-slate-400 font-mono text-sm mt-1">{fillInBlanks.length + i + 1}.</span>
+                                        <div className="flex-1">
+                                            <SmartSentence sentence={ex.question} className="mb-4" />
+                                            <ChoiceGroup
+                                                options={ex.options}
+                                                correctAnswer={ex.answer}
+                                                onComplete={handleQuestionComplete}
+                                            />
+                                        </div>
+                                    </div>
+                                </motion.div>
+                            ))}
+                        </div>
+                    </section>
+                )}
+
+            </div>
         </div>
     );
 };
