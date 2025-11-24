@@ -5,6 +5,7 @@ import { getAllSets, getActiveSet, setActiveSetId, deleteStudySet, addStudySet }
 import type { StudySet } from '../../types/schema';
 import { motion, AnimatePresence } from 'framer-motion';
 import { clsx } from 'clsx';
+import Logo from '../Common/Logo';
 
 const Library: React.FC = () => {
     const [sets, setSets] = useState<StudySet[]>([]);
@@ -105,9 +106,12 @@ const Library: React.FC = () => {
     return (
         <div className="p-6 md:p-8 max-w-[1600px] mx-auto pb-32 relative">
             <header className="mb-8 flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
-                <div>
-                    <h1 className="text-3xl font-bold text-white mb-2">My Library</h1>
-                    <p className="text-slate-400">Manage your study sets and progress.</p>
+                <div className="flex items-center gap-4">
+                    <Logo size="small" />
+                    <div>
+                        <h1 className="text-3xl font-bold text-white mb-2">My Library</h1>
+                        <p className="text-slate-400">Manage your study sets and progress.</p>
+                    </div>
                 </div>
                 <div className="flex flex-wrap items-center gap-3">
                     <div className="flex items-center gap-2 mr-2">

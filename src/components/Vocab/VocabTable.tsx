@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { getActiveSet } from '../../lib/storage';
 import { getLanguageCode, getBestVoice } from '../../lib/languages';
 import { clsx } from 'clsx';
+import Logo from '../Common/Logo';
 
 const VocabTable: React.FC = () => {
     const activeSet = getActiveSet();
@@ -43,6 +44,7 @@ const VocabTable: React.FC = () => {
         <div className="p-6 md:p-12 max-w-6xl mx-auto min-h-screen">
             <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div className="flex items-center gap-4">
+                    <Logo size="small" />
                     <Link to="/dashboard" className="p-2 bg-white/5 rounded-full hover:bg-white/10 transition-colors">
                         <ArrowLeft className="w-5 h-5 text-slate-400" />
                     </Link>

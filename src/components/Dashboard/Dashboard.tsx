@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { Flame, Trophy, BookOpen, Play, ArrowRight, Zap, LayoutGrid, Upload, Sparkles, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Sparkles, TrendingUp, Flame, BookOpen, Zap, Upload, Target, ChevronRight, ChevronLeft, LayoutGrid } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { getActiveSet, getAllSets } from '../../lib/storage';
+import { useState, useEffect } from 'react';
+import { getAllSets, getActiveSet } from '../../lib/storage';
+import { useNavigate } from 'react-router-dom';
 import type { StudySet } from '../../types/schema';
 import { useProgressStore } from '../../store/useProgressStore';
+import Logo from '../Common/Logo';
 
 // Floating Letters Component (Background)
 const FloatingLetters = () => {
@@ -66,7 +67,7 @@ const FloatingLetters = () => {
                     animate={{
                         y: [0, -100, -200],
                         opacity: [0, 0.8, 0],
-                        rotate: [null, Math.random() * 360]
+                        rotate: [null as any, Math.random() * 360]
                     }}
                     transition={{
                         duration: pos.duration,
@@ -85,7 +86,8 @@ const FloatingLetters = () => {
 // Cursor Follower Component
 const CursorLetters = () => {
     const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
-    const characters = ['A', 'あ', '文', 'Ñ', 'Ω'];
+    // VocabGrab in multiple scripts: Telugu, Cyrillic, Japanese, Korean, Greek, Chinese
+    const characters = ['వో', 'с', 'а', 'ぼ', '고', 'я', 'ά', '本'];
 
     useEffect(() => {
         const handleMouseMove = (e: MouseEvent) => {
@@ -266,6 +268,11 @@ const Dashboard: React.FC = () => {
         <div className="p-6 md:p-8 max-w-7xl mx-auto space-y-8 relative">
             <CursorLetters />
 
+            {/* Logo - Top Right Corner (less obstructive) */}
+            <div className="absolute top-6 right-6 z-50 opacity-60 hover:opacity-100 transition-opacity">
+                <Logo size="large" />
+            </div>
+
             {/* 1. HERO SECTION */}
             <section className="relative rounded-3xl overflow-hidden glass-card min-h-[350px] flex items-center justify-center text-center p-8 border border-white/10 shadow-2xl group">
                 <FloatingLetters />
@@ -278,193 +285,177 @@ const Dashboard: React.FC = () => {
                     >
                         <h1 className="text-4xl md:text-6xl font-black text-white mb-6 leading-tight">
                             Stuck in a preset app? <br />
-                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400">
-                                Here, you learn YOUR way.
-                            </span>
+                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-blue-500">Your Rules, Your Learning.</span>
                         </h1>
-                    </motion.div>
-
-                    <motion.p
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ delay: 0.5, duration: 0.8 }}
-                        className="text-lg md:text-xl text-slate-300 mb-8"
-                    >
-                        Want to master a specific topic today? Boom, you can.
-                        Need a custom study path? Boom, it's yours.
-                    </motion.p>
-
-                    <motion.div
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ delay: 0.8 }}
-                        className="flex flex-wrap justify-center gap-4"
-                    >
-                        <button
-                            onClick={() => navigate('/import?mode=json')}
-                            className="btn-primary px-8 py-3 text-lg flex items-center gap-2 shadow-lg shadow-emerald-500/20 bg-slate-700 hover:bg-slate-600 border-slate-600"
-                        >
-                            <Upload size={20} />
-                            Import Your Set
-                        </button>
-                        <button
-                            onClick={() => navigate('/import?mode=ai')}
-                            className="btn-primary px-8 py-3 text-lg flex items-center gap-2 shadow-lg shadow-purple-500/20 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 border-none"
-                        >
-                            <Sparkles size={20} />
-                            AI Generated
-                        </button>
+                        <p className="text-lg md:text-xl text-slate-300 mb-8 max-w-2xl mx-auto leading-relaxed">
+                            You decide what you learn, how you practice, and when you succeed. No forced drills. No rigid paths. Just pure, customizable mastery.
+                        </p>
+                        <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                            <motion.button
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                                onClick={() => navigate('/import?mode=json')}
+                                className="px-8 py-4 bg-emerald-500 hover:bg-emerald-600 text-white rounded-2xl font-bold text-lg shadow-lg shadow-emerald-500/30 transition-all flex items-center gap-2"
+                            >
+                                <Upload size={24} />
+                                Import Your Content
+                            </motion.button>
+                            <motion.button
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                                onClick={() => navigate('/import?mode=ai')}
+                                className="px-8 py-4 bg-purple-500 hover:bg-purple-600 text-white rounded-2xl font-bold text-lg shadow-lg shadow-purple-500/30 transition-all flex items-center gap-2"
+                            >
+                                <Sparkles size={24} />
+                                Generate with AI
+                            </motion.button>
+                        </div>
                     </motion.div>
                 </div>
-
-                {/* Background Gradient Mesh */}
-                <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-transparent via-black/20 to-black/60 z-0" />
             </section>
 
-            {/* 2. STATS ROW */}
+            {/* 2. STATS SECTION */}
             <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {/* Streak Tile */}
+                {/* Streak */}
                 <motion.div
-                    whileHover={{ y: -5 }}
-                    className="glass-card p-6 flex flex-col justify-between h-40 relative overflow-hidden group"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.1 }}
+                    className="glass-card p-6 rounded-2xl flex items-center gap-4 border border-orange-500/20 shadow-lg shadow-orange-500/10"
                 >
-                    <div className="absolute right-0 top-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                        <Flame size={80} />
-                    </div>
-                    <div className="flex items-center gap-3 mb-2">
-                        <div className="p-2 bg-orange-500/20 rounded-lg text-orange-500">
-                            <Flame size={24} fill="currentColor" />
-                        </div>
-                        <span className="text-slate-400 font-medium uppercase tracking-wider text-xs">Day Streak</span>
+                    <div className="p-3 bg-orange-500/20 rounded-xl">
+                        <Flame size={32} className="text-orange-400" />
                     </div>
                     <div>
-                        <div className="text-4xl font-bold text-white">{streak.count}</div>
-                        <div className="text-sm text-slate-400 mt-1">Keep the fire burning!</div>
+                        <p className="text-slate-400 text-sm">Current Streak</p>
+                        <p className="text-3xl font-black text-white flex items-center gap-2">
+                            {streak.count} <Flame size={20} className="text-orange-400" />
+                        </p>
                     </div>
                 </motion.div>
 
-                {/* XP & Activity Tile */}
+                {/* XP */}
                 <motion.div
-                    whileHover={{ y: -5 }}
-                    className="glass-card p-6 flex flex-col justify-between h-40 relative overflow-hidden group"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2 }}
+                    className="glass-card p-6 rounded-2xl flex items-center gap-4 border border-yellow-500/20 shadow-lg shadow-yellow-500/10"
                 >
-                    <div className="flex justify-between items-start mb-4">
-                        <div className="flex items-center gap-3">
-                            <div className="p-2 bg-yellow-500/20 rounded-lg text-yellow-500">
-                                <Zap size={24} fill="currentColor" />
-                            </div>
-                            <span className="text-slate-400 font-medium uppercase tracking-wider text-xs">Total XP</span>
-                        </div>
-                        <div className="text-2xl font-bold text-white">{xp.total}</div>
+                    <div className="p-3 bg-yellow-500/20 rounded-xl">
+                        <Zap size={32} className="text-yellow-400" />
                     </div>
-
-                    {/* Mini Bar Chart */}
-                    <div className="flex items-end justify-between h-16 gap-1">
-                        {weeklyActivity.map((val, i) => (
-                            <div key={i} className="w-full bg-white/5 rounded-t-sm relative group/bar">
+                    <div className="flex-1">
+                        <p className="text-slate-400 text-sm">Weekly XP</p>
+                        <p className="text-3xl font-black text-white">{xp.total}</p>
+                        {/* Mini Activity Chart */}
+                        <div className="flex items-end gap-1 mt-2">
+                            {weeklyActivity.map((val, i) => (
                                 <motion.div
-                                    initial={{ height: 0 }}
-                                    animate={{ height: `${(val / maxActivity) * 100}%` }}
-                                    className="absolute bottom-0 w-full bg-emerald-500/50 rounded-t-sm group-hover/bar:bg-emerald-400 transition-colors"
+                                    key={i}
+                                    className="flex-1 bg-yellow-400/30 rounded-sm"
+                                    style={{ height: `${(val / maxActivity) * 24}px` }}
+                                    initial={{ scaleY: 0 }}
+                                    animate={{ scaleY: 1 }}
+                                    transition={{ delay: 0.3 + i * 0.1 }}
                                 />
-                            </div>
-                        ))}
+                            ))}
+                        </div>
                     </div>
                 </motion.div>
 
-                {/* Words Learned Tile */}
+                {/* Words Learned */}
                 <motion.div
-                    whileHover={{ y: -5 }}
-                    className="glass-card p-6 flex flex-col justify-between h-40 relative overflow-hidden group"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.3 }}
+                    className="glass-card p-6 rounded-2xl flex items-center gap-4 border border-emerald-500/20 shadow-lg shadow-emerald-500/10"
                 >
-                    <div className="absolute right-0 top-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                        <BookOpen size={80} />
-                    </div>
-                    <div className="flex items-center gap-3 mb-2">
-                        <div className="p-2 bg-blue-500/20 rounded-lg text-blue-500">
-                            <Trophy size={24} fill="currentColor" />
-                        </div>
-                        <span className="text-slate-400 font-medium uppercase tracking-wider text-xs">Words Learned</span>
+                    <div className="p-3 bg-emerald-500/20 rounded-xl">
+                        <BookOpen size={32} className="text-emerald-400" />
                     </div>
                     <div>
-                        <div className="text-4xl font-bold text-white">{learnedWords.length}</div>
-                        <div className="text-sm text-slate-400 mt-1">Vocabulary growing strong</div>
+                        <p className="text-slate-400 text-sm">Words Learned</p>
+                        <p className="text-3xl font-black text-white flex items-center gap-2">
+                            {learnedWords} <TrendingUp size={20} className="text-emerald-400" />
+                        </p>
                     </div>
                 </motion.div>
             </section>
 
-
-            {/* 3. LIBRARY / DECKS ROW */}
-            <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
-
+            {/* 3. CURRENT FOCUS & QUICK ACTIONS */}
+            <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Current Focus */}
-                <div className="glass-card p-1">
-                    <div className="p-5 border-b border-white/5">
+                <motion.div
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.4 }}
+                    className="glass-card p-6 rounded-2xl border border-white/10 shadow-lg"
+                >
+                    <div className="flex items-center justify-between mb-4">
                         <h3 className="text-white font-semibold flex items-center gap-2">
-                            <LayoutGrid size={18} className="text-emerald-400" />
+                            <Target size={20} className="text-emerald-400" />
                             Current Focus
                         </h3>
+                        <LayoutGrid size={18} className="text-slate-400" />
                     </div>
-                    <div className="p-6">
-                        {activeSet ? (
-                            <div className="space-y-4">
-                                <div>
-                                    <h4 className="text-xl font-bold text-white">{activeSet.title}</h4>
-                                    <p className="text-slate-400 text-sm">{activeSet.targetLanguage} • {activeSet.vocabulary.length} words</p>
-                                </div>
-                                <Link
-                                    to="/practice"
-                                    className="btn-primary w-full py-3 flex items-center justify-center gap-2"
-                                >
-                                    <Play size={18} fill="currentColor" />
-                                    Continue Learning
-                                </Link>
-                            </div>
-                        ) : (
-                            <div className="text-center py-4 text-slate-400">
-                                <p className="mb-4">No active set selected.</p>
-                                <Link to="/library" className="text-emerald-400 hover:underline">Go to Library</Link>
-                            </div>
-                        )}
-                    </div>
-                </div>
-
-                {/* Recently Added */}
-                <div className="glass-card p-1">
-                    <div className="p-5 border-b border-white/5">
-                        <h3 className="text-white font-semibold flex items-center gap-2">
-                            <BookOpen size={18} className="text-blue-400" />
-                            Recently Added
-                        </h3>
-                    </div>
-                    <div className="p-6">
-                        {mostRecent ? (
-                            <div className="space-y-4">
-                                <div>
-                                    <h4 className="text-xl font-bold text-white">{mostRecent.title}</h4>
-                                    <p className="text-slate-400 text-sm">Added {new Date(mostRecent.createdAt).toLocaleDateString()}</p>
-                                </div>
-                                <button
-                                    onClick={() => {
-                                        // Logic to set active set could go here, or just navigate to library to select
-                                        navigate('/library');
-                                    }}
-                                    className="w-full py-3 rounded-xl bg-white/5 hover:bg-white/10 text-white font-medium transition-colors flex items-center justify-center gap-2"
-                                >
-                                    View in Library <ArrowRight size={18} />
-                                </button>
-                            </div>
-                        ) : (
-                            <div className="text-center py-4 text-slate-400">
-                                <p>No sets created yet.</p>
-                            </div>
-                        )}
-                    </div>
-                </div>
+                    {activeSet ? (
+                        <div>
+                            <h4 className="text-xl font-bold text-white mb-2">{activeSet.title}</h4>
+                            <p className="text-slate-400 text-sm mb-4">{activeSet.targetLanguage || 'Unknown Language'} • {activeSet.difficulty || 'Unknown Difficulty'}</p>
+                            <button
+                                onClick={() => navigate('/practice')}
+                                className="w-full bg-emerald-500 hover:bg-emerald-600 text-white py-3 rounded-xl font-bold transition-all flex items-center justify-center gap-2"
+                            >
+                                <Zap size={20} />
+                                Start Practice
+                            </button>
+                        </div>
+                    ) : (
+                        <div className="text-center py-8">
+                            <p className="text-slate-400 mb-4">No active set selected</p>
+                            <button
+                                onClick={() => navigate('/library')}
+                                className="px-6 py-2 bg-white/10 hover:bg-white/20 text-white rounded-xl font-medium transition-colors"
+                            >
+                                Browse Library
+                            </button>
+                        </div>
+                    )}
+                </motion.div>
 
                 {/* Quick Actions */}
-                <QuickActionsCarousel />
+                <motion.div
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.5 }}
+                >
+                    <QuickActionsCarousel />
+                </motion.div>
+            </section>
 
+            {/* 4. RECENTLY ADDED */}
+            <section>
+                <div className="flex items-center justify-between mb-4">
+                    <h2 className="text-2xl font-bold text-white flex items-center gap-2">
+                        <BookOpen size={24} className="text-emerald-400" />
+                        Recently Added
+                    </h2>
+                </div>
+                {mostRecent ? (
+                    <div className="glass-card p-6 rounded-2xl border border-white/10 shadow-lg">
+                        <h4 className="text-lg font-bold text-white mb-2">{mostRecent.title}</h4>
+                        <p className="text-slate-400 text-sm mb-4">
+                            {mostRecent.targetLanguage || 'Unknown Language'} • {mostRecent.difficulty || 'Unknown Difficulty'}
+                        </p>
+                        <p className="text-slate-300 text-sm">
+                            {mostRecent.vocabulary ? `${mostRecent.vocabulary.length} words` : 'No vocabulary'}
+                        </p>
+                    </div>
+                ) : (
+                    <div className="glass-card p-8 rounded-2xl border border-white/10 text-center">
+                        <p className="text-slate-400 mb-4">No study sets yet. Import content to get started!</p>
+                    </div>
+                )}
             </section>
         </div>
     );

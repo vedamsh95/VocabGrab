@@ -6,6 +6,7 @@ import { addStudySet } from '../../lib/storage';
 import { v4 as uuidv4 } from 'uuid';
 import type { StudySet } from '../../types/schema';
 import AIGenerator from './AIGenerator';
+import Logo from '../Common/Logo';
 
 const SYSTEM_PROMPT_VOCAB = `
 You are a language learning content generator. Output ONLY valid JSON.
@@ -138,6 +139,7 @@ const JsonImporter: React.FC = () => {
         <div className="h-full flex flex-col gap-6">
             {/* Header */}
             <div className="flex items-center justify-between">
+                <Logo size="small" />
                 <div>
                     <h2 className="text-3xl font-bold text-white mb-2">Import Studio</h2>
                     <p className="text-slate-400">Create new study sets from JSON or AI.</p>

@@ -4,6 +4,7 @@ import { clsx } from 'clsx';
 import { BookOpen, MessageCircle, Newspaper, Info, X, Eye, EyeOff, Play, Pause, Loader2, Check } from 'lucide-react';
 import { TranslationClient } from '../../lib/translationClient';
 import type { ReadingContent, AnalyzedSentence } from '../../types/schema';
+import Logo from '../Common/Logo';
 
 import { useReadStore } from '../../store/useReadStore';
 import { useProgressStore } from '../../store/useProgressStore';
@@ -149,6 +150,7 @@ const ReadingLounge: React.FC<ReadingLoungeProps> = ({ content }) => {
             {/* Main Reader Area */}
             <div className="flex-1 glass-panel rounded-2xl p-6 overflow-y-auto relative">
                 <div className="flex items-center justify-between mb-6 sticky top-0 bg-[#02040a]/80 backdrop-blur-md py-2 z-10 border-b border-white/5">
+                    <Logo size="small" />
                     <div className="flex items-center gap-3">
                         <div className="p-2 rounded-lg bg-emerald-500/20 text-emerald-400">
                             {content.mode === 'Conversation' && <MessageCircle size={24} />}

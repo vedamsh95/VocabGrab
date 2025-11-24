@@ -5,6 +5,7 @@ import { getActiveSet } from '../../lib/storage';
 import { useProgressStore } from '../../store/useProgressStore';
 import { clsx } from 'clsx';
 import { motion, AnimatePresence } from 'framer-motion';
+import Logo from '../Common/Logo';
 
 import SmartSentence from './SmartSentence';
 import ClozeInput from './ClozeInput';
@@ -77,6 +78,7 @@ const PracticeArena: React.FC = () => {
             <header className="mb-8 sticky top-0 bg-background/95 backdrop-blur-xl py-4 z-20 border-b border-white/5 -mx-6 px-6 md:-mx-8 md:px-8">
                 <div className="flex items-center justify-between mb-6">
                     <div className="flex items-center gap-4">
+                        <Logo size="small" />
                         <Link to="/dashboard" className="p-2 bg-white/5 rounded-full hover:bg-white/10 transition-colors">
                             <ArrowLeft className="w-5 h-5 text-slate-400" />
                         </Link>

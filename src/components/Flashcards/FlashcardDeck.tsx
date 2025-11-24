@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { ArrowLeft, RotateCcw, Check, X, Layers } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { getActiveSet } from '../../lib/storage';
-
+import Logo from '../Common/Logo';
 
 const FlashcardDeck: React.FC = () => {
     const activeSet = getActiveSet();
@@ -61,6 +61,7 @@ const FlashcardDeck: React.FC = () => {
         <div className="min-h-screen p-6 md:p-12 flex flex-col overflow-hidden">
             <div className="max-w-md mx-auto w-full flex-1 flex flex-col relative">
                 <div className="mb-8 flex items-center justify-between z-10">
+                    <Logo size="small" />
                     <Link to="/dashboard" className="p-2 bg-white/5 rounded-full hover:bg-white/10 transition-colors">
                         <ArrowLeft className="w-5 h-5 text-slate-400" />
                     </Link>
