@@ -9,10 +9,25 @@ import { motion } from 'framer-motion';
 
 import { useProgressStore } from '../../store/useProgressStore';
 
+import { RotateCcw } from 'lucide-react';
+// ClozeInput is already imported above
+
 const PracticeArena: React.FC = () => {
     const activeSet = getActiveSet();
     const [progress, setProgress] = useState(0);
     const addXP = useProgressStore(state => state.addXP);
+    const [resetKey, setResetKey] = useState(0);
+
+    // Jumbled Vocab State
+    const [vocabChallenge, setVocabChallenge] = useState<any[]>([]);
+
+    React.useEffect(() => {
+        if (activeSet?.vocabulary) {
+            // Shuffle and pick 5 random words for the challenge
+            const shuffled = [...activeSet.vocabulary].sort(() => 0.5 - Math.random()).slice(0, 5);
+            setVocabChallenge(shuffled);
+        }
+    }, [activeSet, resetKey]);
 
     if (!activeSet) {
         return (
@@ -26,13 +41,19 @@ const PracticeArena: React.FC = () => {
     const exercises = activeSet.exercises || {};
     const fillInBlanks = exercises.fillInBlanks || [];
     const multipleChoice = exercises.multipleChoice || [];
-    const totalQuestions = fillInBlanks.length + multipleChoice.length;
+    const totalQuestions = fillInBlanks.length + multipleChoice.length + vocabChallenge.length;
 
     const handleQuestionComplete = (isCorrect: boolean) => {
         if (isCorrect) {
             setProgress(prev => Math.min(prev + 1, totalQuestions));
             addXP(10); // Award 10 XP for correct answer
         }
+    };
+
+    const handleResetAll = () => {
+        setResetKey(prev => prev + 1);
+        setProgress(0);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
     return (
@@ -45,10 +66,18 @@ const PracticeArena: React.FC = () => {
                     </Link>
                     <div>
                         <h1 className="text-xl font-bold text-white">{activeSet.title}</h1>
-                        <p className="text-slate-400 text-sm">Practice Chapter 1</p>
+                        <p className="text-slate-400 text-sm">Practice Arena</p>
                     </div>
                 </div>
                 <div className="flex items-center gap-3">
+                    <button
+                        onClick={handleResetAll}
+                        className="p-2 bg-white/5 hover:bg-white/10 rounded-full text-slate-400 hover:text-white transition-colors"
+                        title="Reset All Exercises"
+                    >
+                        <RotateCcw className="w-5 h-5" />
+                    </button>
+
                     <div className="text-right hidden sm:block">
                         <div className="text-sm text-white font-bold">{progress} / {totalQuestions}</div>
                         <div className="text-xs text-slate-500">Completed</div>
@@ -68,13 +97,48 @@ const PracticeArena: React.FC = () => {
                 </div>
             </header>
 
-            <div className="space-y-12">
+            <div className="space-y-12" key={resetKey}>
+
+                {/* Section 0: Vocabulary Challenge (Jumbled) */}
+                {vocabChallenge.length > 0 && (
+                    <section>
+                        <h2 className="text-lg font-bold text-emerald-400 mb-6 flex items-center gap-2">
+                            <span className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-sm">1</span>
+                            Vocabulary Challenge
+                        </h2>
+                        <div className="glass-card overflow-hidden">
+                            <table className="w-full text-left border-collapse">
+                                <thead>
+                                    <tr className="border-b border-white/10 bg-white/5">
+                                        <th className="p-4 text-sm font-medium text-slate-400 w-1/3">Definition / Native</th>
+                                        <th className="p-4 text-sm font-medium text-slate-400">Target Word</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {vocabChallenge.map((word, i) => (
+                                        <tr key={word.id || i} className="border-b border-white/5 last:border-0 hover:bg-white/5 transition-colors">
+                                            <td className="p-4 text-slate-200 font-medium">
+                                                {word.translation}
+                                            </td>
+                                            <td className="p-4">
+                                                <ClozeInput
+                                                    answer={word.word}
+                                                    onComplete={handleQuestionComplete}
+                                                />
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </section>
+                )}
 
                 {/* Section 1: Fill in the Blanks */}
                 {fillInBlanks.length > 0 && (
                     <section>
                         <h2 className="text-lg font-bold text-emerald-400 mb-6 flex items-center gap-2">
-                            <span className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-sm">1</span>
+                            <span className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-sm">2</span>
                             Fill in the Blanks
                         </h2>
                         <div className="space-y-6">
@@ -106,7 +170,7 @@ const PracticeArena: React.FC = () => {
                 {multipleChoice.length > 0 && (
                     <section>
                         <h2 className="text-lg font-bold text-emerald-400 mb-6 flex items-center gap-2">
-                            <span className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-sm">2</span>
+                            <span className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-sm">3</span>
                             Multiple Choice
                         </h2>
                         <div className="space-y-6">
