@@ -265,6 +265,10 @@ const AIGenerator: React.FC<AIGeneratorProps> = ({ onSuccess }) => {
                     <div className="grid grid-cols-2 gap-4">
                         <div className="flex items-center gap-2 text-sm text-slate-300">
                             <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                            Gemini API has Free Tier
+                        </div>
+                        <div className="flex items-center gap-2 text-sm text-slate-300">
+                            <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
                             Context-Aware Definitions
                         </div>
                         <div className="flex items-center gap-2 text-sm text-slate-300">
@@ -326,6 +330,16 @@ const AIGenerator: React.FC<AIGeneratorProps> = ({ onSuccess }) => {
                             className="w-full bg-transparent border-none p-0 text-white focus:ring-0 placeholder:text-slate-600 font-mono text-sm"
                         />
                     </div>
+                    {!apiKey && (
+                        <a
+                            href="https://aistudio.google.com/app/apikey"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="px-3 py-1.5 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 rounded-lg text-xs font-medium transition-colors border border-emerald-500/30 whitespace-nowrap"
+                        >
+                            Get API Key
+                        </a>
+                    )}
                 </div>
 
                 {apiKey && (

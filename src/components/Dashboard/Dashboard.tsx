@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Flame, Trophy, BookOpen, Play, ArrowRight, Zap, LayoutGrid, Upload, Sparkles } from 'lucide-react';
+import { Flame, Trophy, BookOpen, Play, ArrowRight, Zap, LayoutGrid, Upload, Sparkles, ChevronLeft, ChevronRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { getActiveSet, getAllSets } from '../../lib/storage';
 import type { StudySet } from '../../types/schema';
@@ -8,35 +8,74 @@ import { useProgressStore } from '../../store/useProgressStore';
 
 // Floating Letters Component (Background)
 const FloatingLetters = () => {
-    const characters = ['A', 'あ', '文', 'Ñ', 'ç', 'ẞ', '你', 'Ω', 'Ж', 'த', 'é', 'ü', 'å', 'ø', '☕', '🚀', '⭐'];
+    const characters = [
+        // Latin Extended
+        'A', 'Ñ', 'ç', 'ẞ', 'é', 'ü', 'å', 'ø',
+        // Japanese
+        'あ', 'か', 'さ', 'ひ', 'ん',
+        // Chinese
+        '文', '你', '好', '学', '书',
+        // Korean
+        '한', '글', '가', '나',
+        // Arabic
+        'ا', 'ب', 'ت', 'ث',
+        // Hindi/Devanagari
+        'अ', 'आ', 'क', 'ख',
+        // Russian/Cyrillic
+        'Ж', 'Д', 'Я', 'Ф',
+        // Greek
+        'Ω', 'Σ', 'Δ', 'Φ',
+        // Hebrew
+        'א', 'ב', 'ג',
+        // Thai
+        'ก', 'ข', 'ค',
+        // Tamil
+        'த', 'ம', 'ன',
+        // Symbols
+        '☕', '🚀', '⭐', '📚', '✨'
+    ];
     const colors = ['text-emerald-500/10', 'text-blue-500/10', 'text-purple-500/10', 'text-orange-500/10', 'text-pink-500/10'];
+
+    // Generate random positions once to ensure proper distribution
+    const [positions] = useState(() =>
+        Array.from({ length: 50 }).map(() => ({
+            x: Math.random() * 100,
+            y: Math.random() * 100,
+            char: characters[Math.floor(Math.random() * characters.length)],
+            color: colors[Math.floor(Math.random() * colors.length)],
+            duration: Math.random() * 20 + 10,
+            delay: Math.random() * 10
+        }))
+    );
 
     return (
         <div className="absolute inset-0 overflow-hidden pointer-events-none select-none">
-            {Array.from({ length: 40 }).map((_, i) => (
+            {positions.map((pos, i) => (
                 <motion.div
                     key={i}
-                    className={`absolute font-bold text-2xl md:text-4xl ${colors[Math.floor(Math.random() * colors.length)]}`}
+                    className={`absolute font-bold text-2xl md:text-4xl ${pos.color}`}
+                    style={{
+                        left: `${pos.x}%`,
+                        top: `${pos.y}%`
+                    }}
                     initial={{
-                        x: Math.random() * 100 + '%',
-                        y: Math.random() * 100 + '%',
                         opacity: 0,
                         scale: 0.5,
                         rotate: Math.random() * 360
                     }}
                     animate={{
-                        y: [null, Math.random() * -100],
+                        y: [0, -100, -200],
                         opacity: [0, 0.8, 0],
                         rotate: [null, Math.random() * 360]
                     }}
                     transition={{
-                        duration: Math.random() * 20 + 10,
+                        duration: pos.duration,
                         repeat: Infinity,
                         ease: "linear",
-                        delay: Math.random() * 10
+                        delay: pos.delay
                     }}
                 >
-                    {characters[Math.floor(Math.random() * characters.length)]}
+                    {pos.char}
                 </motion.div>
             ))}
         </div>
@@ -80,6 +119,130 @@ const CursorLetters = () => {
         </div>
     );
 };
+
+// Quick Actions Carousel Component
+const QuickActionsCarousel: React.FC = () => {
+    const navigate = useNavigate();
+    const [currentPage, setCurrentPage] = useState(0);
+
+    const pages = [
+        // Page 1: Create & Import
+        [
+            {
+                icon: <Sparkles size={24} className="text-purple-400" />,
+                label: 'AI Gen',
+                bg: 'bg-purple-500/10 hover:bg-purple-500/20 border-purple-500/20',
+                action: () => navigate('/import?mode=ai')
+            },
+            {
+                icon: <Upload size={24} className="text-emerald-400" />,
+                label: 'Import Set',
+                bg: 'bg-emerald-500/10 hover:bg-emerald-500/20 border-emerald-500/20',
+                action: () => navigate('/import?mode=json')
+            }
+        ],
+        // Page 2: Practice
+        [
+            {
+                icon: <BookOpen size={24} className="text-blue-400" />,
+                label: 'Vocab',
+                bg: 'bg-blue-500/10 hover:bg-blue-500/20 border-blue-500/20',
+                action: () => navigate('/vocab')
+            },
+            {
+                icon: <Zap size={24} className="text-yellow-400" />,
+                label: 'Practice',
+                bg: 'bg-yellow-500/10 hover:bg-yellow-500/20 border-yellow-500/20',
+                action: () => navigate('/practice')
+            }
+        ],
+        // Page 3: Reading & Library
+        [
+            {
+                icon: <BookOpen size={24} className="text-orange-400" />,
+                label: 'Reading',
+                bg: 'bg-orange-500/10 hover:bg-orange-500/20 border-orange-500/20',
+                action: () => navigate('/reading')
+            },
+            {
+                icon: <LayoutGrid size={24} className="text-cyan-400" />,
+                label: 'Library',
+                bg: 'bg-cyan-500/10 hover:bg-cyan-500/20 border-cyan-500/20',
+                action: () => navigate('/library')
+            }
+        ]
+    ];
+
+    const nextPage = () => {
+        setCurrentPage((prev) => (prev + 1) % pages.length);
+    };
+
+    const prevPage = () => {
+        setCurrentPage((prev) => (prev - 1 + pages.length) % pages.length);
+    };
+
+    return (
+        <div className="glass-card p-1 relative">
+            <div className="p-5 border-b border-white/5 flex justify-between items-center">
+                <h3 className="text-white font-semibold flex items-center gap-2">
+                    <Zap size={18} className="text-yellow-400" />
+                    Quick Actions
+                </h3>
+                <div className="flex items-center gap-2">
+                    <button
+                        onClick={prevPage}
+                        className="p-1 text-slate-400 hover:text-white transition-colors rounded hover:bg-white/5"
+                    >
+                        <ChevronLeft size={16} />
+                    </button>
+                    <button
+                        onClick={nextPage}
+                        className="p-1 text-slate-400 hover:text-white transition-colors rounded hover:bg-white/5"
+                    >
+                        <ChevronRight size={16} />
+                    </button>
+                </div>
+            </div>
+            <div className="p-6">
+                <motion.div
+                    key={currentPage}
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -20 }}
+                    transition={{ duration: 0.3 }}
+                    className="grid grid-cols-2 gap-3"
+                >
+                    {pages[currentPage].map((action, idx) => (
+                        <button
+                            key={idx}
+                            onClick={action.action}
+                            className={`flex flex-col items-center justify-center p-4 rounded-xl ${action.bg} border transition-all group`}
+                        >
+                            <div className="mb-2 group-hover:scale-110 transition-transform">
+                                {action.icon}
+                            </div>
+                            <span className="text-xs font-bold text-white">{action.label}</span>
+                        </button>
+                    ))}
+                </motion.div>
+                {/* Page Indicators */}
+                <div className="flex justify-center gap-1.5 mt-4">
+                    {pages.map((_, idx) => (
+                        <button
+                            key={idx}
+                            onClick={() => setCurrentPage(idx)}
+                            className={`h-1.5 rounded-full transition-all ${idx === currentPage
+                                ? 'w-6 bg-emerald-400'
+                                : 'w-1.5 bg-white/20 hover:bg-white/40'
+                                }`}
+                        />
+                    ))}
+                </div>
+            </div>
+        </div>
+    );
+};
+
 
 const Dashboard: React.FC = () => {
     const navigate = useNavigate();
@@ -299,34 +462,8 @@ const Dashboard: React.FC = () => {
                     </div>
                 </div>
 
-                {/* Quick Practice */}
-                <div className="glass-card p-1">
-                    <div className="p-5 border-b border-white/5 flex justify-between items-center">
-                        <h3 className="text-white font-semibold flex items-center gap-2">
-                            <Zap size={18} className="text-yellow-400" />
-                            Quick Actions
-                        </h3>
-                        <button className="text-xs text-slate-400 hover:text-white transition-colors">
-                            Customize
-                        </button>
-                    </div>
-                    <div className="p-6 grid grid-cols-2 gap-3">
-                        <Link
-                            to="/import?mode=ai"
-                            className="flex flex-col items-center justify-center p-4 rounded-xl bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/20 transition-all group"
-                        >
-                            <Zap size={24} className="text-purple-400 mb-2 group-hover:scale-110 transition-transform" />
-                            <span className="text-xs font-bold text-purple-300">AI Gen</span>
-                        </Link>
-                        <Link
-                            to="/import?mode=json"
-                            className="flex flex-col items-center justify-center p-4 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 transition-all group"
-                        >
-                            <Upload size={24} className="text-emerald-400 mb-2 group-hover:scale-110 transition-transform" />
-                            <span className="text-xs font-bold text-emerald-300">Import Set</span>
-                        </Link>
-                    </div>
-                </div>
+                {/* Quick Actions */}
+                <QuickActionsCarousel />
 
             </section>
         </div>
