@@ -41,7 +41,8 @@ const SmartSpeakingLab: React.FC = () => {
             };
 
             mediaRecorder.onstop = async () => {
-                const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/wav' });
+                // Browsers record in webm/ogg usually, not wav. Let decodeAudioData handle the format detection.
+                const audioBlob = new Blob(audioChunksRef.current, { type: mediaRecorder.mimeType });
                 await processAudio(audioBlob);
             };
 

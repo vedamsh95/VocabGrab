@@ -6,7 +6,8 @@ env.useBrowserCache = true;
 
 class GrammarWorker {
     static instance: any = null;
-    static modelId = 'Xenova/flan-t5-small';
+    // Upgrade to a smarter model (LaMini is better at following instructions than vanilla Flan-T5)
+    static modelId = 'Xenova/LaMini-Flan-T5-248M';
 
     static async getInstance(progressCallback: Function) {
         if (this.instance === null) {
@@ -30,8 +31,8 @@ self.addEventListener('message', async (event) => {
                 });
             });
 
-            // Prompt engineering for Flan-T5
-            const prompt = `Fix grammar: ${text}`;
+            // More explicit prompt for the model
+            const prompt = `Correct the grammar of the following German sentence: ${text}`;
 
             const output = await generator(prompt, {
                 max_new_tokens: 100,
