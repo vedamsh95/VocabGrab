@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { clsx } from 'clsx';
-import { BookOpen, MessageCircle, Newspaper, Info, X, Eye, EyeOff, Play, Pause } from 'lucide-react';
+import { BookOpen, MessageCircle, Newspaper, Info, X, Eye, EyeOff, Play, Pause, Loader2 } from 'lucide-react';
+import { TranslationClient } from '../../lib/translationClient';
 import type { ReadingContent, AnalyzedSentence } from '../../types/schema';
 
 import { useReadStore } from '../../store/useReadStore';
@@ -24,13 +25,29 @@ const ReadingLounge: React.FC<ReadingLoungeProps> = ({ content }) => {
 
     const isChat = content.mode === 'Conversation';
 
-    // Initialize Speech Synthesis
+    const [modelLoading, setModelLoading] = useState(false);
+    const [modelProgress, setModelProgress] = useState<{ status: string; file: string; progress: number } | null>(null);
+    const translationClientRef = useRef<TranslationClient | null>(null);
+
+    // Initialize Speech Synthesis & Translation Client
     useEffect(() => {
         synthRef.current = window.speechSynthesis;
+
+        // Init Translation Client
+        translationClientRef.current = new TranslationClient((data) => {
+            setModelLoading(true);
+            setModelProgress(data);
+            if (data.status === 'ready') {
+                setModelLoading(false);
+                setModelProgress(null);
+            }
+        });
+
         return () => {
             if (synthRef.current) {
                 synthRef.current.cancel();
             }
+            translationClientRef.current?.terminate();
         };
     }, []);
 
@@ -99,25 +116,31 @@ const ReadingLounge: React.FC<ReadingLoungeProps> = ({ content }) => {
         }
     };
 
-    const handleWordClick = (word: string, e: React.MouseEvent) => {
+    const handleWordClick = async (word: string, e: React.MouseEvent) => {
         e.stopPropagation();
-        // Simple lookup simulation (in real app, use dictionary)
-        import('../../lib/dictionary').then(({ lookupWord }) => {
-            const entry = lookupWord(word);
-            if (entry) {
-                setSelectedWord({
-                    word: entry.word,
-                    translation: entry.definition,
-                    grammarTip: `${entry.pos} ${entry.gender || ''}`
-                });
-            } else {
+        setSelectedWord({
+            word: word,
+            translation: "Translating...",
+            grammarTip: "Neural AI"
+        });
+
+        try {
+            if (translationClientRef.current) {
+                const translation = await translationClientRef.current.translate(word);
                 setSelectedWord({
                     word: word,
-                    translation: "Translation not found",
-                    grammarTip: "Unknown"
+                    translation: translation,
+                    grammarTip: "Neural AI"
                 });
             }
-        });
+        } catch (err) {
+            console.error(err);
+            setSelectedWord({
+                word: word,
+                translation: "Error translating",
+                grammarTip: "Offline Mode"
+            });
+        }
     };
 
     return (
@@ -151,6 +174,12 @@ const ReadingLounge: React.FC<ReadingLoungeProps> = ({ content }) => {
                     </div>
 
                     <div className="flex items-center gap-3">
+                        {modelLoading && (
+                            <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-blue-500/10 text-blue-400 text-xs font-medium border border-blue-500/20">
+                                <Loader2 size={14} className="animate-spin" />
+                                {modelProgress ? `Loading AI: ${Math.round(modelProgress.progress || 0)}%` : "Loading AI..."}
+                            </div>
+                        )}
                         <button
                             onClick={handleTogglePlay}
                             className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500 hover:bg-emerald-400 text-white font-bold transition-all shadow-lg shadow-emerald-500/20"
