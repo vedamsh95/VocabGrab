@@ -14,6 +14,7 @@ const SentenceBuilderGame: React.FC<SentenceBuilderGameProps> = ({ vocabulary })
     const [availableWords, setAvailableWords] = useState<string[]>([]);
     const [builtSentence, setBuiltSentence] = useState<string[]>([]);
     const [status, setStatus] = useState<'playing' | 'correct' | 'incorrect'>('playing');
+    const [showAnswer, setShowAnswer] = useState(false);
     const addXP = useProgressStore(state => state.addXP);
 
     const loadNewSentence = () => {
@@ -23,10 +24,12 @@ const SentenceBuilderGame: React.FC<SentenceBuilderGameProps> = ({ vocabulary })
 
         const randomItem = candidates[Math.floor(Math.random() * candidates.length)];
         setCurrentSentence(randomItem);
+        setShowAnswer(false);
 
         // Tokenize and shuffle
-        // Simple split by space, removing punctuation for matching logic but keeping for display if possible
-        // For simplicity, let's just split by space and strip punctuation for the "blocks"
+        // Keep punctuation attached to words for the blocks, or strip it?
+        // User wants to build the sentence. Usually blocks have punctuation or it's ignored.
+        // Let's strip punctuation for the BLOCKS to make it cleaner, but we need to match against the stripped target.
         const words = randomItem.exampleSentence!
             .replace(/[.,/#!$%^&*;:{}=\-_`~()]/g, "")
             .split(/\s+/)
@@ -63,17 +66,23 @@ const SentenceBuilderGame: React.FC<SentenceBuilderGameProps> = ({ vocabulary })
 
         const target = currentSentence.exampleSentence!
             .replace(/[.,/#!$%^&*;:{}=\-_`~()]/g, "")
+            .toLowerCase()
             .split(/\s+/)
             .join(' ');
 
-        const attempt = builtSentence.join(' ');
+        const attempt = builtSentence.join(' ').toLowerCase();
 
-        if (attempt.toLowerCase() === target.toLowerCase()) {
+        if (attempt === target) {
             setStatus('correct');
             addXP(20);
         } else {
             setStatus('incorrect');
         }
+    };
+
+    const revealAnswer = () => {
+        setShowAnswer(true);
+        setStatus('incorrect'); // Mark as incorrect if revealed
     };
 
     if (!currentSentence) {
@@ -87,17 +96,12 @@ const SentenceBuilderGame: React.FC<SentenceBuilderGameProps> = ({ vocabulary })
     return (
         <div className="max-w-2xl mx-auto">
             <div className="glass-card p-8 mb-8 text-center">
-                <h3 className="text-slate-400 text-sm uppercase tracking-wider mb-4">Translate this sentence</h3>
+                <h3 className="text-slate-400 text-sm uppercase tracking-wider mb-4">Build the Sentence</h3>
                 <p className="text-2xl font-bold text-white mb-2">
-                    {/* We don't have the English translation of the sentence in the schema usually, 
-                        so we might have to rely on the user knowing the context or just building it.
-                        Wait, the schema usually has 'translation' for the word, but not always for the example sentence.
-                        Let's check if we can infer or just show the sentence context.
-                        Actually, for this game to work well, we need the translation. 
-                        If it's missing, we might show the word translation as a hint.
-                    */}
-                    "{currentSentence.translation}" (Context)
+                    Using: <span className="text-emerald-400">"{currentSentence.word}"</span>
                 </p>
+                <p className="text-slate-400 text-sm mb-4">({currentSentence.translation})</p>
+
                 <div className="h-1 w-20 bg-emerald-500/30 mx-auto rounded-full my-4" />
 
                 {/* Answer Area */}
@@ -118,13 +122,31 @@ const SentenceBuilderGame: React.FC<SentenceBuilderGameProps> = ({ vocabulary })
                         </motion.button>
                     ))}
                 </div>
+
+                {/* Feedback / Revealed Answer */}
+                {(status === 'incorrect' || showAnswer) && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="mt-4 p-4 bg-red-500/10 border border-red-500/20 rounded-xl"
+                    >
+                        {showAnswer ? (
+                            <div>
+                                <p className="text-slate-400 text-xs uppercase mb-1">Correct Sentence</p>
+                                <p className="text-white font-medium">{currentSentence.exampleSentence}</p>
+                            </div>
+                        ) : (
+                            <p className="text-red-400 text-sm">Incorrect order. Try again!</p>
+                        )}
+                    </motion.div>
+                )}
             </div>
 
             {/* Word Pool */}
             <div className="flex flex-wrap gap-3 justify-center mb-8">
                 {availableWords.map((word, i) => (
                     <motion.button
-                        layoutId={`word-${word}-${i}`} // Unique layout ID issue if duplicates exist, simple fix:
+                        layoutId={`word-${word}-${i}`}
                         key={`pool-${i}`}
                         onClick={() => handleWordClick(word, i, 'pool')}
                         className="px-3 py-1.5 bg-white/10 text-white rounded-lg font-medium hover:bg-white/20 border border-white/10"
@@ -144,16 +166,24 @@ const SentenceBuilderGame: React.FC<SentenceBuilderGameProps> = ({ vocabulary })
                         Next Sentence <ArrowRight size={20} />
                     </button>
                 ) : (
-                    <button
-                        onClick={checkAnswer}
-                        disabled={builtSentence.length === 0}
-                        className={clsx(
-                            "btn-primary px-8 py-3 flex items-center gap-2",
-                            status === 'incorrect' && "bg-red-500 hover:bg-red-600"
-                        )}
-                    >
-                        {status === 'incorrect' ? 'Try Again' : 'Check Answer'}
-                    </button>
+                    <div className="flex gap-3">
+                        <button
+                            onClick={revealAnswer}
+                            className="px-6 py-3 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 font-medium transition-colors"
+                        >
+                            Reveal Answer
+                        </button>
+                        <button
+                            onClick={checkAnswer}
+                            disabled={builtSentence.length === 0}
+                            className={clsx(
+                                "btn-primary px-8 py-3 flex items-center gap-2",
+                                status === 'incorrect' && "bg-red-500 hover:bg-red-600"
+                            )}
+                        >
+                            Check Answer
+                        </button>
+                    </div>
                 )}
             </div>
         </div>
