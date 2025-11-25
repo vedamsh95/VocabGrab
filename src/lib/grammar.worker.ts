@@ -3,6 +3,8 @@ import { pipeline, env } from '@xenova/transformers';
 // Skip local checks since we are running in browser
 env.allowLocalModels = false;
 env.useBrowserCache = true;
+// Disable multi-threading to avoid COEP/COOP header requirements
+env.backends.onnx.wasm.numThreads = 1;
 
 class GrammarWorker {
     static instance: any = null;
