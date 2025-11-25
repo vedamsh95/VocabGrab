@@ -54,6 +54,59 @@ export interface ReadingContent {
     content: AnalyzedSentence[];
 }
 
+export interface GrammarLesson {
+    lesson_meta: {
+        topic_id: string;
+        target_language: string;
+        topic_name: string;
+        cefr_level: string;
+        learning_objective: string;
+    };
+    pedagogy: {
+        hook: {
+            description: string;
+            content: string;
+            audio_script?: string;
+        };
+        inductive_discovery: {
+            description: string;
+            examples: {
+                sentence: string;
+                translation: string;
+                highlight_indices: number[];
+            }[];
+        };
+        deductive_explanation: {
+            morphology: {
+                description: string;
+                formula: string;
+                exceptions: string[];
+            };
+            pragmatics: {
+                description: string;
+                usage_notes: string;
+            };
+        };
+        contrastive_analysis: {
+            description: string;
+            common_pitfalls: {
+                incorrect: string;
+                correct: string;
+                explanation: string;
+            }[];
+        };
+    };
+    practice: {
+        scaffolded_exercises: {
+            type: "multiple_choice" | "gap_fill" | "sentence_reorder";
+            question: string;
+            options?: string[];
+            correct_answer: string;
+            hint?: string;
+        }[];
+    };
+}
+
 export interface StudySet {
     id: string;
     title: string;
@@ -66,6 +119,7 @@ export interface StudySet {
         multipleChoice: MultipleChoiceExercise[];
     };
     readingSections?: ReadingContent[];
+    grammarLessons?: GrammarLesson[];
     createdAt: string;
 }
 

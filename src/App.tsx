@@ -8,6 +8,7 @@ import AppLayout from './components/Layout/AppLayout';
 
 import Library from './components/Library/Library';
 import ReadingPage from './components/Reading/ReadingPage';
+import GrammarLessonView from './components/Grammar/GrammarLessonView';
 import GuidePage from './components/Guide/GuidePage';
 
 import { useEffect } from 'react';
@@ -32,6 +33,7 @@ function App() {
           <Route path="/flashcards" element={<FlashcardDeck />} />
           <Route path="/practice" element={<PracticeArena />} />
           <Route path="/reading" element={<ReadingPage />} />
+          <Route path="/grammar" element={<GrammarLessonView />} />
           <Route path="/guide" element={<GuidePage />} />
         </Routes>
       </AppLayout>

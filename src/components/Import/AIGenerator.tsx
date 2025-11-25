@@ -69,6 +69,94 @@ Schema:
 Generate a short story or conversation with 8-12 sentences.
 `;
 
+const SYSTEM_PROMPT_GRAMMAR = `
+You are an expert Applied Linguist and Curriculum Designer specializing in Second Language Acquisition (SLA).
+Your goal is to generate a high-quality, modern grammar lesson structured in strict JSON format using the PPP Method (Presentation, Practice, Production).
+
+Pedagogical Guidelines:
+1. Context First: Always start with a functional "Hook" (a situation where the grammar is strictly necessary).
+2. Inductive Approach: Prioritize showing examples before explaining the rule.
+3. Contrastive Analysis: Explicitly highlight "false friends" or common errors learners make with this specific topic.
+4. Tone: Encouraging, clear, and culturally relevant to the target language.
+
+Output ONLY valid JSON.
+Schema:
+{
+  "title": "Topic Name",
+  "targetLanguage": "German",
+  "difficulty": "B1",
+  "grammarLessons": [
+    {
+      "lesson_meta": {
+        "topic_id": "unique_id",
+        "target_language": "German",
+        "topic_name": "Topic Name",
+        "cefr_level": "B1",
+        "learning_objective": "By the end of this lesson..."
+      },
+      "pedagogy": {
+        "hook": {
+          "description": "Short scenario...",
+          "content": "Dialogue or story...",
+          "audio_script": "Optional script..."
+        },
+        "inductive_discovery": {
+          "description": "Examples...",
+          "examples": [
+            { "sentence": "...", "translation": "...", "highlight_indices": [0, 5] }
+          ]
+        },
+        "deductive_explanation": {
+          "morphology": { "description": "...", "formula": "...", "exceptions": ["..."] },
+          "pragmatics": { "description": "...", "usage_notes": "..." }
+        },
+        "contrastive_analysis": {
+          "description": "Common mistakes...",
+          "common_pitfalls": [
+            { "incorrect": "...", "correct": "...", "explanation": "..." }
+          ]
+        }
+      },
+      "practice": {
+        "scaffolded_exercises": [
+          { "type": "multiple_choice", "question": "...", "options": ["..."], "correct_answer": "...", "hint": "..." }
+        ]
+      }
+    }
+  ],
+  "vocabulary": [
+    { "word": "...", "translation": "...", "exampleSentence": "...", "grammarTip": "..." }
+  ],
+  "flashcards": [
+    { "front": "...", "back": "..." }
+  ],
+  "readingSections": [
+    {
+      "id": "reading_1",
+      "title": "Short Story",
+      "targetLanguage": "German",
+      "mode": "Story",
+      "content": [
+        {
+          "id": "sent_1",
+          "speaker": "Narrator",
+          "sentence": "...",
+          "translation": "...",
+          "formationNote": "...",
+          "smartLesson": { "construction": "...", "situation": "..." },
+          "grammarTags": ["..."]
+        }
+      ]
+    }
+  ],
+  "exercises": {
+    "fillInBlanks": [ { "id": "...", "question": "...", "answer": "..." } ],
+    "multipleChoice": [ { "id": "...", "question": "...", "answer": "...", "options": ["..."] } ]
+  }
+}
+Generate a complete lesson with 5 vocab items, 5 flashcards, 1 short story (5-8 sentences), and 5 exercises of each type.
+`;
+
 interface AIGeneratorProps {
     onSuccess: () => void;
 }
@@ -84,7 +172,7 @@ const AIGenerator: React.FC<AIGeneratorProps> = ({ onSuccess }) => {
     const [topic, setTopic] = useState('');
     const [targetLanguage, setTargetLanguage] = useState('German');
     const [difficulty, setDifficulty] = useState('Beginner');
-    const [mode, setMode] = useState<'vocab' | 'reading'>('vocab');
+    const [mode, setMode] = useState<'vocab' | 'reading' | 'grammar'>('vocab');
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [generatedJson, setGeneratedJson] = useState<string | null>(null);
@@ -167,12 +255,13 @@ const AIGenerator: React.FC<AIGeneratorProps> = ({ onSuccess }) => {
         handleSaveKey();
 
         try {
-            const systemPrompt = mode === 'vocab' ? SYSTEM_PROMPT_VOCAB : SYSTEM_PROMPT_READING;
+            const systemPrompt = mode === 'vocab' ? SYSTEM_PROMPT_VOCAB :
+                mode === 'reading' ? SYSTEM_PROMPT_READING : SYSTEM_PROMPT_GRAMMAR;
             const prompt = `
             Topic: ${topic}
             Target Language: ${targetLanguage}
             Difficulty: ${difficulty}
-            Mode: ${mode === 'vocab' ? 'Vocabulary & Exercises' : 'Reading Comprehension / Story'}
+            Mode: ${mode === 'vocab' ? 'Vocabulary & Exercises' : mode === 'reading' ? 'Reading Comprehension / Story' : 'Grammar Lesson'}
             
             ${systemPrompt}
             `;
@@ -228,6 +317,7 @@ const AIGenerator: React.FC<AIGeneratorProps> = ({ onSuccess }) => {
                 flashcards: parsed.flashcards || [],
                 exercises: parsed.exercises || { fillInBlanks: [], multipleChoice: [] },
                 readingSections: parsed.readingSections || [],
+                grammarLessons: parsed.grammarLessons || [],
                 difficulty: parsed.difficulty || difficulty
             };
 
@@ -405,6 +495,15 @@ const AIGenerator: React.FC<AIGeneratorProps> = ({ onSuccess }) => {
                         >
                             <BookOpen size={16} /> Reading
                         </button>
+                        <button
+                            onClick={() => setMode('grammar')}
+                            className={clsx(
+                                "flex-1 py-2 rounded-lg text-sm font-medium transition-all flex items-center justify-center gap-2",
+                                mode === 'grammar' ? "bg-emerald-500 text-white shadow-lg" : "text-slate-400 hover:text-white"
+                            )}
+                        >
+                            <Cpu size={16} /> Grammar
+                        </button>
                     </div>
 
                     <div>
@@ -413,118 +512,118 @@ const AIGenerator: React.FC<AIGeneratorProps> = ({ onSuccess }) => {
                             type="text"
                             value={topic}
                             onChange={(e) => setTopic(e.target.value)}
-                            placeholder={mode === 'vocab' ? "e.g., Ordering Coffee, Business Meetings" : "e.g., A Mystery Story, News about Tech"}
+                            placeholder={mode === 'vocab' ? "e.g., Ordering Coffee" : mode === 'reading' ? "e.g., A Mystery Story" : "e.g., The Subjunctive Mood"}
                             className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-emerald-500/50 transition-colors"
                         />
                     </div>
+                </div>
 
-                    <div className="grid grid-cols-2 gap-4">
-                        <div>
-                            <label className="text-sm text-slate-400 block mb-2">Target Language</label>
-                            <div className="relative">
-                                <Globe size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
-                                <select
-                                    value={targetLanguage}
-                                    onChange={(e) => setTargetLanguage(e.target.value)}
-                                    className="w-full bg-white/5 border border-white/10 rounded-xl pl-10 pr-4 py-3 text-white focus:outline-none focus:border-emerald-500/50 appearance-none"
-                                >
-                                    <option value="German" className="bg-slate-900">German</option>
-                                    <option value="Spanish" className="bg-slate-900">Spanish</option>
-                                    <option value="French" className="bg-slate-900">French</option>
-                                    <option value="Italian" className="bg-slate-900">Italian</option>
-                                    <option value="Japanese" className="bg-slate-900">Japanese</option>
-                                    <option value="Chinese" className="bg-slate-900">Chinese</option>
-                                    <option value="Korean" className="bg-slate-900">Korean</option>
-                                    <option value="Russian" className="bg-slate-900">Russian</option>
-                                    <option value="Portuguese" className="bg-slate-900">Portuguese</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div>
-                            <label className="text-sm text-slate-400 block mb-2">Difficulty</label>
+                <div className="grid grid-cols-2 gap-4">
+                    <div>
+                        <label className="text-sm text-slate-400 block mb-2">Target Language</label>
+                        <div className="relative">
+                            <Globe size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
                             <select
-                                value={difficulty}
-                                onChange={(e) => setDifficulty(e.target.value)}
-                                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-emerald-500/50 appearance-none"
+                                value={targetLanguage}
+                                onChange={(e) => setTargetLanguage(e.target.value)}
+                                className="w-full bg-white/5 border border-white/10 rounded-xl pl-10 pr-4 py-3 text-white focus:outline-none focus:border-emerald-500/50 appearance-none"
                             >
-                                <option value="Beginner" className="bg-slate-900">Beginner (A1-A2)</option>
-                                <option value="Intermediate" className="bg-slate-900">Intermediate (B1-B2)</option>
-                                <option value="Advanced" className="bg-slate-900">Advanced (C1-C2)</option>
+                                <option value="German" className="bg-slate-900">German</option>
+                                <option value="Spanish" className="bg-slate-900">Spanish</option>
+                                <option value="French" className="bg-slate-900">French</option>
+                                <option value="Italian" className="bg-slate-900">Italian</option>
+                                <option value="Japanese" className="bg-slate-900">Japanese</option>
+                                <option value="Chinese" className="bg-slate-900">Chinese</option>
+                                <option value="Korean" className="bg-slate-900">Korean</option>
+                                <option value="Russian" className="bg-slate-900">Russian</option>
+                                <option value="Portuguese" className="bg-slate-900">Portuguese</option>
                             </select>
                         </div>
                     </div>
-
-                    <div className="mt-auto">
-                        {error && (
-                            <div className="mb-4 p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm flex items-start gap-2">
-                                <AlertCircle size={16} className="mt-0.5 shrink-0" />
-                                <p>{error}</p>
-                            </div>
-                        )}
-
-                        <button
-                            onClick={handleGenerate}
-                            disabled={isLoading || !topic || !apiKey}
-                            className={clsx(
-                                "w-full py-4 rounded-xl font-bold transition-all flex items-center justify-center gap-2 text-lg",
-                                isLoading || !topic || !apiKey
-                                    ? "bg-white/5 text-slate-500 cursor-not-allowed"
-                                    : "bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-lg shadow-emerald-500/20 hover:scale-[1.02]"
-                            )}
+                    <div>
+                        <label className="text-sm text-slate-400 block mb-2">Difficulty</label>
+                        <select
+                            value={difficulty}
+                            onChange={(e) => setDifficulty(e.target.value)}
+                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-emerald-500/50 appearance-none"
                         >
-                            {isLoading ? (
-                                <>
-                                    <Loader2 size={24} className="animate-spin" />
-                                    Generating Magic...
-                                </>
-                            ) : (
-                                <>
-                                    <Sparkles size={24} />
-                                    Generate {mode === 'vocab' ? 'Vocabulary' : 'Story'}
-                                </>
-                            )}
-                        </button>
+                            <option value="Beginner" className="bg-slate-900">Beginner (A1-A2)</option>
+                            <option value="Intermediate" className="bg-slate-900">Intermediate (B1-B2)</option>
+                            <option value="Advanced" className="bg-slate-900">Advanced (C1-C2)</option>
+                        </select>
                     </div>
                 </div>
 
-                {/* Preview */}
-                <div className="glass-panel rounded-2xl p-6 flex flex-col relative overflow-hidden">
-                    {generatedJson ? (
-                        <>
-                            <div className="flex items-center justify-between mb-4">
-                                <h3 className="text-white font-bold flex items-center gap-2">
-                                    <Check size={18} className="text-emerald-400" />
-                                    Ready to Import
-                                </h3>
-                                <span className="text-xs text-slate-400 font-mono">
-                                    {(generatedJson.length / 1024).toFixed(1)} KB
-                                </span>
-                            </div>
-                            <div className="flex-1 bg-[#02040a] rounded-xl p-4 overflow-y-auto mb-4 border border-white/10">
-                                <pre className="text-xs font-mono text-slate-300 whitespace-pre-wrap">
-                                    {generatedJson}
-                                </pre>
-                            </div>
-                            <button
-                                onClick={handleImport}
-                                className="w-full py-3 bg-white/10 hover:bg-white/20 text-white rounded-xl font-medium transition-colors flex items-center justify-center gap-2"
-                            >
-                                <Save size={18} />
-                                Save to Library
-                            </button>
-                        </>
-                    ) : (
-                        <div className="flex-1 flex flex-col items-center justify-center text-slate-500 text-center p-8">
-                            <div className="w-20 h-20 rounded-full bg-white/5 flex items-center justify-center mb-6">
-                                <Sparkles size={40} className="opacity-20" />
-                            </div>
-                            <h3 className="text-lg font-medium text-white mb-2">AI Generator</h3>
-                            <p className="max-w-xs mx-auto">
-                                Enter a topic and let Gemini create a custom study set for you in seconds.
-                            </p>
+                <div className="mt-auto">
+                    {error && (
+                        <div className="mb-4 p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm flex items-start gap-2">
+                            <AlertCircle size={16} className="mt-0.5 shrink-0" />
+                            <p>{error}</p>
                         </div>
                     )}
+
+                    <button
+                        onClick={handleGenerate}
+                        disabled={isLoading || !topic || !apiKey}
+                        className={clsx(
+                            "w-full py-4 rounded-xl font-bold transition-all flex items-center justify-center gap-2 text-lg",
+                            isLoading || !topic || !apiKey
+                                ? "bg-white/5 text-slate-500 cursor-not-allowed"
+                                : "bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-lg shadow-emerald-500/20 hover:scale-[1.02]"
+                        )}
+                    >
+                        {isLoading ? (
+                            <>
+                                <Loader2 size={24} className="animate-spin" />
+                                Generating Magic...
+                            </>
+                        ) : (
+                            <>
+                                <Sparkles size={24} />
+                                Generate {mode === 'vocab' ? 'Vocabulary' : mode === 'reading' ? 'Story' : 'Lesson'}
+                            </>
+                        )}
+                    </button>
                 </div>
+            </div>
+
+            {/* Preview */}
+            <div className="glass-panel rounded-2xl p-6 flex flex-col relative overflow-hidden">
+                {generatedJson ? (
+                    <>
+                        <div className="flex items-center justify-between mb-4">
+                            <h3 className="text-white font-bold flex items-center gap-2">
+                                <Check size={18} className="text-emerald-400" />
+                                Ready to Import
+                            </h3>
+                            <span className="text-xs text-slate-400 font-mono">
+                                {(generatedJson.length / 1024).toFixed(1)} KB
+                            </span>
+                        </div>
+                        <div className="flex-1 bg-[#02040a] rounded-xl p-4 overflow-y-auto mb-4 border border-white/10">
+                            <pre className="text-xs font-mono text-slate-300 whitespace-pre-wrap">
+                                {generatedJson}
+                            </pre>
+                        </div>
+                        <button
+                            onClick={handleImport}
+                            className="w-full py-3 bg-white/10 hover:bg-white/20 text-white rounded-xl font-medium transition-colors flex items-center justify-center gap-2"
+                        >
+                            <Save size={18} />
+                            Save to Library
+                        </button>
+                    </>
+                ) : (
+                    <div className="flex-1 flex flex-col items-center justify-center text-slate-500 text-center p-8">
+                        <div className="w-20 h-20 rounded-full bg-white/5 flex items-center justify-center mb-6">
+                            <Sparkles size={40} className="opacity-20" />
+                        </div>
+                        <h3 className="text-lg font-medium text-white mb-2">AI Generator</h3>
+                        <p className="max-w-xs mx-auto">
+                            Enter a topic and let Gemini create a custom study set for you in seconds.
+                        </p>
+                    </div>
+                )}
             </div>
         </div>
     );

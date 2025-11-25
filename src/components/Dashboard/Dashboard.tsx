@@ -158,7 +158,7 @@ const QuickActionsCarousel: React.FC = () => {
                 action: () => navigate('/practice')
             }
         ],
-        // Page 3: Reading & Library
+        // Page 3: Content (Reading & Grammar)
         [
             {
                 icon: <BookOpen size={24} className="text-orange-400" />,
@@ -166,6 +166,15 @@ const QuickActionsCarousel: React.FC = () => {
                 bg: 'bg-orange-500/10 hover:bg-orange-500/20 border-orange-500/20',
                 action: () => navigate('/reading')
             },
+            {
+                icon: <LayoutGrid size={24} className="text-pink-400" />, // Changed icon/color
+                label: 'Grammar',
+                bg: 'bg-pink-500/10 hover:bg-pink-500/20 border-pink-500/20',
+                action: () => navigate('/grammar')
+            }
+        ],
+        // Page 4: Library
+        [
             {
                 icon: <LayoutGrid size={24} className="text-cyan-400" />,
                 label: 'Library',

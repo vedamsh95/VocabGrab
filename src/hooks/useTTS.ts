@@ -1,7 +1,9 @@
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { getLanguageCode, getBestVoice } from '../lib/languages';
 
 export const useTTS = () => {
+    const [isSpeaking, setIsSpeaking] = useState(false);
+
     const speak = useCallback((text: string, languageName?: string) => {
         if (!text) return;
 
@@ -18,12 +20,18 @@ export const useTTS = () => {
         }
 
         utterance.rate = 0.9; // Slightly slower for learning
+
+        utterance.onstart = () => setIsSpeaking(true);
+        utterance.onend = () => setIsSpeaking(false);
+        utterance.onerror = () => setIsSpeaking(false);
+
         window.speechSynthesis.speak(utterance);
     }, []);
 
     const stop = useCallback(() => {
         window.speechSynthesis.cancel();
+        setIsSpeaking(false);
     }, []);
 
-    return { speak, stop };
+    return { speak, stop, isSpeaking };
 };
