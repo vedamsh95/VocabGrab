@@ -8,7 +8,7 @@ import { useTTS } from '../../hooks/useTTS';
 const GrammarLessonView: React.FC = () => {
     const activeSet = getActiveSet();
     const lessons = activeSet?.grammarLessons || [];
-    const [currentLessonIndex, setCurrentLessonIndex] = useState(0);
+    const [currentLessonIndex] = useState(0);
     const [currentSection, setCurrentSection] = useState<'hook' | 'inductive' | 'deductive' | 'contrastive' | 'practice'>('hook');
     const { speak, isSpeaking, stop } = useTTS();
 
