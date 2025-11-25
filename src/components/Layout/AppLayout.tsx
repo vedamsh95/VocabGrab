@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { BookOpen, Layers, PenTool, Home, Upload, Book } from 'lucide-react';
+import { BookOpen, Layers, PenTool, Home, Upload, Book, Pilcrow } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -55,6 +55,7 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                     <DockItem to="/flashcards" icon={<Layers className="w-6 h-6" />} label="Flashcards" isActive={location.pathname === '/flashcards'} />
                     <DockItem to="/practice" icon={<PenTool className="w-6 h-6" />} label="Practice" isActive={location.pathname === '/practice'} />
                     <DockItem to="/reading" icon={<BookOpen className="w-6 h-6" />} label="Reading" isActive={location.pathname === '/reading'} />
+                    <DockItem to="/grammar" icon={<Pilcrow className="w-6 h-6" />} label="Grammar" isActive={location.pathname === '/grammar'} />
                     <div className="w-px h-8 bg-white/10 mx-2" />
                     <DockItem to="/library" icon={<Book className="w-6 h-6" />} label="Library" isActive={location.pathname === '/library'} />
                     <DockItem to="/import" icon={<Upload className="w-6 h-6" />} label="Import" isActive={location.pathname === '/import'} />

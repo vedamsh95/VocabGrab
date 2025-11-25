@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { clsx } from 'clsx';
-import { Sparkles, Key, Globe, AlertCircle, Check, Loader2, Save, RefreshCw, Cpu, BookOpen, List, HelpCircle, ChevronDown, ChevronUp } from 'lucide-react';
+import { Sparkles, Key, Globe, AlertCircle, Check, Loader2, Save, RefreshCw, Cpu, BookOpen, List, HelpCircle, ChevronDown, ChevronUp, Pilcrow } from 'lucide-react';
 import { addStudySet } from '../../lib/storage';
 import { v4 as uuidv4 } from 'uuid';
 import type { StudySet } from '../../types/schema';
@@ -502,7 +502,7 @@ const AIGenerator: React.FC<AIGeneratorProps> = ({ onSuccess }) => {
                                 mode === 'grammar' ? "bg-emerald-500 text-white shadow-lg" : "text-slate-400 hover:text-white"
                             )}
                         >
-                            <Cpu size={16} /> Grammar
+                            <Pilcrow size={16} /> Grammar
                         </button>
                     </div>
 

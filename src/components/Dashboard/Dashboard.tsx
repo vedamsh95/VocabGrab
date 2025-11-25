@@ -1,4 +1,4 @@
-import { Sparkles, TrendingUp, Flame, BookOpen, Zap, Upload, Target, ChevronRight, ChevronLeft, LayoutGrid } from 'lucide-react';
+import { Sparkles, TrendingUp, Flame, BookOpen, Zap, Upload, Target, ChevronRight, ChevronLeft, LayoutGrid, Pilcrow } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import { getAllSets, getActiveSet } from '../../lib/storage';
@@ -167,7 +167,7 @@ const QuickActionsCarousel: React.FC = () => {
                 action: () => navigate('/reading')
             },
             {
-                icon: <LayoutGrid size={24} className="text-pink-400" />, // Changed icon/color
+                icon: <Pilcrow size={24} className="text-pink-400" />, // Changed icon/color
                 label: 'Grammar',
                 bg: 'bg-pink-500/10 hover:bg-pink-500/20 border-pink-500/20',
                 action: () => navigate('/grammar')

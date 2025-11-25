@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { clsx } from 'clsx';
-import { Upload, FileJson, AlertCircle, Check, Copy, BookOpen, List, Sparkles } from 'lucide-react';
+import { Upload, FileJson, AlertCircle, Check, Copy, BookOpen, List, Sparkles, Pilcrow } from 'lucide-react';
 import { addStudySet } from '../../lib/storage';
 import { v4 as uuidv4 } from 'uuid';
 import type { StudySet } from '../../types/schema';
@@ -78,13 +78,101 @@ Color Rules for grammarAnalysis:
 "gray": Other
 `;
 
+const SYSTEM_PROMPT_GRAMMAR = `
+You are an expert Applied Linguist and Curriculum Designer specializing in Second Language Acquisition (SLA).
+Your goal is to generate a high-quality, modern grammar lesson structured in strict JSON format using the PPP Method (Presentation, Practice, Production).
+
+Pedagogical Guidelines:
+1. Context First: Always start with a functional "Hook" (a situation where the grammar is strictly necessary).
+2. Inductive Approach: Prioritize showing examples before explaining the rule.
+3. Contrastive Analysis: Explicitly highlight "false friends" or common errors learners make with this specific topic.
+4. Tone: Encouraging, clear, and culturally relevant to the target language.
+
+Output ONLY valid JSON.
+Schema:
+{
+  "title": "Topic Name",
+  "targetLanguage": "German",
+  "difficulty": "B1",
+  "grammarLessons": [
+    {
+      "lesson_meta": {
+        "topic_id": "unique_id",
+        "target_language": "German",
+        "topic_name": "Topic Name",
+        "cefr_level": "B1",
+        "learning_objective": "By the end of this lesson..."
+      },
+      "pedagogy": {
+        "hook": {
+          "description": "Short scenario...",
+          "content": "Dialogue or story...",
+          "audio_script": "Optional script..."
+        },
+        "inductive_discovery": {
+          "description": "Examples...",
+          "examples": [
+            { "sentence": "...", "translation": "...", "highlight_indices": [0, 5] }
+          ]
+        },
+        "deductive_explanation": {
+          "morphology": { "description": "...", "formula": "...", "exceptions": ["..."] },
+          "pragmatics": { "description": "...", "usage_notes": "..." }
+        },
+        "contrastive_analysis": {
+          "description": "Common mistakes...",
+          "common_pitfalls": [
+            { "incorrect": "...", "correct": "...", "explanation": "..." }
+          ]
+        }
+      },
+      "practice": {
+        "scaffolded_exercises": [
+          { "type": "multiple_choice", "question": "...", "options": ["..."], "correct_answer": "...", "hint": "..." }
+        ]
+      }
+    }
+  ],
+  "vocabulary": [
+    { "word": "...", "translation": "...", "exampleSentence": "...", "grammarTip": "..." }
+  ],
+  "flashcards": [
+    { "front": "...", "back": "..." }
+  ],
+  "readingSections": [
+    {
+      "id": "reading_1",
+      "title": "Short Story",
+      "targetLanguage": "German",
+      "mode": "Story",
+      "content": [
+        {
+          "id": "sent_1",
+          "speaker": "Narrator",
+          "sentence": "...",
+          "translation": "...",
+          "formationNote": "...",
+          "smartLesson": { "construction": "...", "situation": "..." },
+          "grammarTags": ["..."]
+        }
+      ]
+    }
+  ],
+  "exercises": {
+    "fillInBlanks": [ { "id": "...", "question": "...", "answer": "..." } ],
+    "multipleChoice": [ { "id": "...", "question": "...", "answer": "...", "options": ["..."] } ]
+  }
+}
+Generate a complete lesson with 5 vocab items, 5 flashcards, 1 short story (5-8 sentences), and 5 exercises of each type.
+`;
+
 const JsonImporter: React.FC = () => {
     const [searchParams] = useSearchParams();
     const [jsonInput, setJsonInput] = useState('');
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState(false);
     const [showSyntax, setShowSyntax] = useState(false);
-    const [activeTab, setActiveTab] = useState<'vocab' | 'reading'>('vocab');
+    const [activeTab, setActiveTab] = useState<'vocab' | 'reading' | 'grammar'>('vocab');
     const [mode, setMode] = useState<'json' | 'ai'>('json');
 
     useEffect(() => {
@@ -116,7 +204,9 @@ const JsonImporter: React.FC = () => {
                 readingSections: (parsed.readingSections || []).map((section: any) => ({
                     ...section,
                     targetLanguage: parsed.targetLanguage // Inherit from set
-                }))
+                })),
+                grammarLessons: parsed.grammarLessons || [],
+                difficulty: parsed.difficulty || 'Beginner'
             };
 
             addStudySet(newSet);
@@ -131,7 +221,8 @@ const JsonImporter: React.FC = () => {
     };
 
     const copyPrompt = () => {
-        const prompt = activeTab === 'vocab' ? SYSTEM_PROMPT_VOCAB : SYSTEM_PROMPT_READING;
+        const prompt = activeTab === 'vocab' ? SYSTEM_PROMPT_VOCAB :
+            activeTab === 'reading' ? SYSTEM_PROMPT_READING : SYSTEM_PROMPT_GRAMMAR;
         navigator.clipboard.writeText(prompt);
     };
 
@@ -269,6 +360,15 @@ const JsonImporter: React.FC = () => {
                                     >
                                         <BookOpen size={16} /> Reading & Stories
                                     </button>
+                                    <button
+                                        onClick={() => setActiveTab('grammar')}
+                                        className={clsx(
+                                            "flex-1 py-3 text-sm font-medium transition-colors flex items-center justify-center gap-2",
+                                            activeTab === 'grammar' ? "text-emerald-400 border-b-2 border-emerald-400 bg-white/5" : "text-slate-400 hover:text-white"
+                                        )}
+                                    >
+                                        <Pilcrow size={16} /> Grammar Lesson
+                                    </button>
                                 </div>
 
                                 <div className="p-6 overflow-y-auto flex-1 bg-[#02040a]">
@@ -282,7 +382,8 @@ const JsonImporter: React.FC = () => {
                                         </button>
                                     </div>
                                     <pre className="bg-white/5 p-4 rounded-xl text-xs font-mono text-slate-300 overflow-x-auto whitespace-pre-wrap border border-white/10">
-                                        {activeTab === 'vocab' ? SYSTEM_PROMPT_VOCAB : SYSTEM_PROMPT_READING}
+                                        {activeTab === 'vocab' ? SYSTEM_PROMPT_VOCAB :
+                                            activeTab === 'reading' ? SYSTEM_PROMPT_READING : SYSTEM_PROMPT_GRAMMAR}
                                     </pre>
                                 </div>
                             </div>
