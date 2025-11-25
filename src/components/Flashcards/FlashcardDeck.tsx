@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, RotateCcw, Check, X, Layers, Volume2 } from 'lucide-react';
+import { ArrowLeft, RotateCcw, Check, X, Layers, Volume2, ArrowRightLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { getActiveSet } from '../../lib/storage';
 import Logo from '../Common/Logo';
 import { useTTS } from '../../hooks/useTTS';
+import { clsx } from 'clsx';
 
 const FlashcardDeck: React.FC = () => {
     const activeSet = getActiveSet();
@@ -12,6 +13,7 @@ const FlashcardDeck: React.FC = () => {
     const [isFlipped, setIsFlipped] = useState(false);
     const [completed, setCompleted] = useState(false);
     const [score, setScore] = useState({ correct: 0, incorrect: 0 });
+    const [invertCards, setInvertCards] = useState(false);
     const { speak } = useTTS();
 
     if (!activeSet) {
@@ -71,7 +73,20 @@ const FlashcardDeck: React.FC = () => {
                         <h1 className="text-xl font-bold text-white">{activeSet.title}</h1>
                         <p className="text-slate-400 text-sm">Card {currentIndex + 1} of {cards.length}</p>
                     </div>
-                    <div className="w-9"></div>
+                    <div className="text-center">
+                        <h1 className="text-xl font-bold text-white">{activeSet.title}</h1>
+                        <p className="text-slate-400 text-sm">Card {currentIndex + 1} of {cards.length}</p>
+                    </div>
+                    <button
+                        onClick={() => setInvertCards(!invertCards)}
+                        className={clsx(
+                            "p-2 rounded-full transition-colors",
+                            invertCards ? "bg-emerald-500/20 text-emerald-400" : "bg-white/5 text-slate-400 hover:bg-white/10"
+                        )}
+                        title="Invert Cards"
+                    >
+                        <ArrowRightLeft className="w-5 h-5" />
+                    </button>
                 </div>
 
                 {completed ? (
@@ -103,7 +118,7 @@ const FlashcardDeck: React.FC = () => {
                                 animate={{ rotateY: isFlipped ? 180 : 0 }}
                                 transition={{ duration: 0.6, type: "spring", stiffness: 260, damping: 20 }}
                             >
-                                {/* Front (Target Language) */}
+                                {/* Front */}
                                 <div
                                     className="absolute w-full h-full backface-hidden glass-card border border-white/10 flex flex-col items-center justify-center p-8 text-center bg-black/40 backdrop-blur-xl cursor-pointer hover:bg-white/5 transition-colors"
                                     onClick={() => setIsFlipped(true)}
@@ -113,9 +128,17 @@ const FlashcardDeck: React.FC = () => {
                                     </div>
                                     <span className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4">Tap to flip</span>
                                     <div className="text-center">
-                                        <h3 className="text-4xl font-bold text-white mb-4">{cards[currentIndex].back}</h3>
+                                        <h3 className="text-4xl font-bold text-white mb-4">
+                                            {invertCards ? cards[currentIndex].front : cards[currentIndex].back}
+                                        </h3>
                                         <button
-                                            onClick={(e) => { e.stopPropagation(); speak(cards[currentIndex].back, activeSet.targetLanguage); }}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                speak(
+                                                    invertCards ? cards[currentIndex].front : cards[currentIndex].back,
+                                                    invertCards ? 'en-US' : activeSet.targetLanguage
+                                                );
+                                            }}
                                             className="p-3 rounded-full bg-white/10 hover:bg-white/20 transition-colors text-emerald-400 inline-flex"
                                         >
                                             <Volume2 size={24} />
@@ -123,14 +146,30 @@ const FlashcardDeck: React.FC = () => {
                                     </div>
                                 </div>
 
-                                {/* Back (English/Native) */}
+                                {/* Back */}
                                 <div
                                     className="absolute w-full h-full backface-hidden glass-card border border-emerald-500/30 flex flex-col items-center justify-center p-8 text-center bg-emerald-900/20 backdrop-blur-xl cursor-pointer"
                                     style={{ transform: 'rotateY(180deg)' }}
                                     onClick={() => setIsFlipped(false)}
                                 >
-                                    <span className="text-xs font-bold text-emerald-400 uppercase tracking-wider mb-4">Meaning</span>
-                                    <h3 className="text-4xl font-bold text-white">{cards[currentIndex].front}</h3>
+                                    <span className="text-xs font-bold text-emerald-400 uppercase tracking-wider mb-4">
+                                        {invertCards ? "Target" : "Meaning"}
+                                    </span>
+                                    <h3 className="text-4xl font-bold text-white mb-4">
+                                        {invertCards ? cards[currentIndex].back : cards[currentIndex].front}
+                                    </h3>
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            speak(
+                                                invertCards ? cards[currentIndex].back : cards[currentIndex].front,
+                                                invertCards ? activeSet.targetLanguage : 'en-US'
+                                            );
+                                        }}
+                                        className="p-3 rounded-full bg-white/10 hover:bg-white/20 transition-colors text-emerald-400 inline-flex"
+                                    >
+                                        <Volume2 size={24} />
+                                    </button>
                                 </div>
                             </motion.div>
                         </div>

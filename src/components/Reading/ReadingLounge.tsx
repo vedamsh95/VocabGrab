@@ -11,6 +11,7 @@ import { useReadStore } from '../../store/useReadStore';
 import { useProgressStore } from '../../store/useProgressStore';
 import { getLanguageCode, getBestVoice, getNLLBCode } from '../../lib/languages';
 import { useTTS } from '../../hooks/useTTS';
+import { tokenizeText } from '../../lib/tokenizer';
 
 interface ReadingLoungeProps {
     content: ReadingContent;
@@ -282,19 +283,18 @@ const ReadingLounge: React.FC<ReadingLoungeProps> = ({ content }) => {
 
                             {selectionMode === 'word' ? (
                                 <div className={clsx("text-lg leading-relaxed", isChat ? "" : "inline")}>
-                                    {item.sentence.split(/([ .,;?!]+)/).filter(Boolean).map((token, idx) => {
-                                        const isWord = /^\w+$/.test(token);
-                                        if (!isWord) return <span key={idx}>{token}</span>;
+                                    {tokenizeText(item.sentence, content.targetLanguage).map((token, idx) => {
+                                        if (!token.isWord) return <span key={idx}>{token.text}</span>;
                                         return (
                                             <span
                                                 key={idx}
-                                                onClick={(e) => handleWordClick(token, e)}
+                                                onClick={(e) => handleWordClick(token.text, e)}
                                                 className={clsx(
                                                     "cursor-pointer hover:text-emerald-400 hover:underline decoration-emerald-500/50 underline-offset-4 transition-colors",
-                                                    selectedWord?.word === token ? "text-emerald-400 font-bold" : "text-slate-200"
+                                                    selectedWord?.word === token.text ? "text-emerald-400 font-bold" : "text-slate-200"
                                                 )}
                                             >
-                                                {token}
+                                                {token.text}
                                             </span>
                                         );
                                     })}
