@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { clsx } from 'clsx';
 import { BookOpen, MessageCircle, Newspaper, Info, X, Eye, EyeOff, Play, Pause, Loader2, Check } from 'lucide-react';
 import { TranslationClient } from '../../lib/translationClient';
+import { GrammarClient } from '../../lib/grammarClient';
 import type { ReadingContent, AnalyzedSentence } from '../../types/schema';
 import Logo from '../Common/Logo';
 
@@ -30,6 +31,7 @@ const ReadingLounge: React.FC<ReadingLoungeProps> = ({ content }) => {
     const [modelLoading, setModelLoading] = useState(false);
     const [modelProgress, setModelProgress] = useState<{ status: string; file: string; progress: number } | null>(null);
     const translationClientRef = useRef<TranslationClient | null>(null);
+    const grammarClientRef = useRef<GrammarClient | null>(null);
 
     // Initialize Speech Synthesis & Translation Client
     useEffect(() => {
@@ -42,6 +44,15 @@ const ReadingLounge: React.FC<ReadingLoungeProps> = ({ content }) => {
             if (data.status === 'ready') {
                 setModelLoading(false);
                 setModelProgress(null);
+            }
+        });
+
+        // Init Grammar Client (for context explanation)
+        grammarClientRef.current = new GrammarClient((data) => {
+            if (data.status === 'loading') {
+                setModelLoading(true);
+            } else if (data.status === 'complete' || data.status === 'ready') {
+                setModelLoading(false);
             }
         });
 
@@ -118,28 +129,37 @@ const ReadingLounge: React.FC<ReadingLoungeProps> = ({ content }) => {
         }
     };
 
-    const handleWordClick = async (word: string, e: React.MouseEvent) => {
+    const handleWordClick = async (word: string, sentenceContext: string, e: React.MouseEvent) => {
         e.stopPropagation();
         setSelectedWord({
             word: word,
-            translation: "Translating...",
+            translation: "Analyzing context...",
             grammarTip: "Neural AI"
         });
 
         try {
-            if (translationClientRef.current) {
+            // Priority: Use GrammarClient for context-aware explanation
+            if (grammarClientRef.current) {
+                const explanation = await grammarClientRef.current.explainContext(word, sentenceContext);
+                setSelectedWord({
+                    word: word,
+                    translation: explanation,
+                    grammarTip: "Context Aware"
+                });
+            } else if (translationClientRef.current) {
+                // Fallback to simple translation
                 const translation = await translationClientRef.current.translate(word);
                 setSelectedWord({
                     word: word,
                     translation: translation,
-                    grammarTip: "Neural AI"
+                    grammarTip: "Direct Translation"
                 });
             }
         } catch (err) {
             console.error(err);
             setSelectedWord({
                 word: word,
-                translation: "Error translating",
+                translation: "Error analyzing",
                 grammarTip: "Offline Mode"
             });
         }
@@ -260,7 +280,7 @@ const ReadingLounge: React.FC<ReadingLoungeProps> = ({ content }) => {
                                         return (
                                             <span
                                                 key={idx}
-                                                onClick={(e) => handleWordClick(token, e)}
+                                                onClick={(e) => handleWordClick(token, item.sentence, e)}
                                                 className={clsx(
                                                     "cursor-pointer hover:text-emerald-400 hover:underline decoration-emerald-500/50 underline-offset-4 transition-colors",
                                                     selectedWord?.word === token ? "text-emerald-400 font-bold" : "text-slate-200"

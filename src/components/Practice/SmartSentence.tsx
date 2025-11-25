@@ -4,15 +4,17 @@ import { getActiveSet, updateStudySet } from '../../lib/storage';
 import { lookupWord, type DictionaryEntry } from '../../lib/dictionary';
 import { getLanguageCode, getBestVoice } from '../../lib/languages';
 import { clsx } from 'clsx';
-import { Plus, Check, Book, Volume2 } from 'lucide-react';
+import { Plus, Check, Book, Volume2, Loader2, Sparkles } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
+import type { GrammarClient } from '../../lib/grammarClient';
 
 interface SmartSentenceProps {
     sentence: string;
     className?: string;
+    grammarClient?: GrammarClient | null;
 }
 
-const SmartSentence: React.FC<SmartSentenceProps> = ({ sentence, className }) => {
+const SmartSentence: React.FC<SmartSentenceProps> = ({ sentence, className, grammarClient }) => {
     const activeSet = getActiveSet();
     const vocabList = activeSet?.vocabulary || [];
 
@@ -33,6 +35,7 @@ const SmartSentence: React.FC<SmartSentenceProps> = ({ sentence, className }) =>
                         word={token}
                         vocabItem={vocabItem}
                         sentenceContext={sentence}
+                        grammarClient={grammarClient}
                     />
                 );
             })}
@@ -44,19 +47,42 @@ interface SmartWordProps {
     word: string;
     vocabItem?: { word: string; translation: string; grammarTip?: string };
     sentenceContext: string;
+    grammarClient?: GrammarClient | null;
 }
 
-const SmartWord: React.FC<SmartWordProps> = ({ word, vocabItem, sentenceContext }) => {
+const SmartWord: React.FC<SmartWordProps> = ({ word, vocabItem, sentenceContext, grammarClient }) => {
     const [isPopoverOpen, setIsPopoverOpen] = useState(false);
     const [dictionaryEntry, setDictionaryEntry] = useState<DictionaryEntry | null>(null);
+    const [isLoading, setIsLoading] = useState(false);
     const [isAdded, setIsAdded] = useState(false);
 
-    const handleOpen = () => {
+    const handleOpen = async () => {
         setIsPopoverOpen(!isPopoverOpen);
         if (!isPopoverOpen && !vocabItem) {
             // Perform lookup when opening if not already in vocab
-            const entry = lookupWord(word);
-            setDictionaryEntry(entry);
+
+            if (grammarClient) {
+                setIsLoading(true);
+                try {
+                    const explanation = await grammarClient.explainContext(word, sentenceContext);
+                    setDictionaryEntry({
+                        word: word,
+                        definition: explanation,
+                        pos: 'AI Context',
+                        gender: ''
+                    });
+                } catch (err) {
+                    console.error("AI Lookup failed, falling back to dictionary", err);
+                    const entry = lookupWord(word);
+                    setDictionaryEntry(entry);
+                } finally {
+                    setIsLoading(false);
+                }
+            } else {
+                const entry = lookupWord(word);
+                setDictionaryEntry(entry);
+            }
+
             setIsAdded(false); // Reset added state
         }
     };
@@ -105,70 +131,79 @@ const SmartWord: React.FC<SmartWordProps> = ({ word, vocabItem, sentenceContext 
             padding={10}
             onClickOutside={() => setIsPopoverOpen(false)}
             content={
-                <div className="glass-panel p-4 rounded-xl shadow-xl border border-emerald-500/30 min-w-[220px] animate-in fade-in zoom-in-95 duration-200 z-50">
-                    <div className="flex items-start justify-between mb-2">
-                        <h4 className="text-lg font-bold text-white">{vocabItem ? vocabItem.word : (dictionaryEntry?.word || word)}</h4>
-                        <div className="flex gap-2">
-                            <button onClick={handleSpeak} className="p-1 hover:bg-white/10 rounded-full transition-colors text-emerald-400">
-                                <Volume2 size={14} />
-                            </button>
-                            {vocabItem && <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]" />}
+                <div className="glass-panel p-4 rounded-xl shadow-xl w-64 border border-white/10 animate-in fade-in zoom-in-95 duration-200 z-50">
+                    {isLoading ? (
+                        <div className="flex flex-col items-center justify-center py-4 space-y-2 text-emerald-400">
+                            <Loader2 className="animate-spin w-6 h-6" />
+                            <span className="text-xs font-medium">Asking AI...</span>
                         </div>
-                    </div>
-
-                    {vocabItem ? (
-                        <>
-                            <p className="text-emerald-400 font-medium mb-1">{vocabItem.translation}</p>
-                            {vocabItem.grammarTip && (
-                                <p className="text-xs text-slate-400 italic border-t border-white/10 pt-2 mt-2">
-                                    Tip: {vocabItem.grammarTip}
-                                </p>
-                            )}
-                        </>
                     ) : dictionaryEntry ? (
-                        <>
-                            <p className="text-emerald-400 font-medium mb-1">{dictionaryEntry.definition}</p>
-                            <div className="flex items-center gap-2 text-xs text-slate-400 italic border-t border-white/10 pt-2 mt-2 mb-3">
-                                <span className="px-1.5 py-0.5 rounded bg-white/10">{dictionaryEntry.pos}</span>
-                                {dictionaryEntry.gender && <span className="px-1.5 py-0.5 rounded bg-white/10">{dictionaryEntry.gender}</span>}
+                        <div className="space-y-3">
+                            <div className="flex justify-between items-start">
+                                <div>
+                                    <h3 className="font-bold text-lg text-white flex items-center gap-2">
+                                        {dictionaryEntry.word}
+                                        {dictionaryEntry.pos === 'AI Context' && <Sparkles className="w-3 h-3 text-amber-400" />}
+                                    </h3>
+                                    <div className="flex items-center gap-2 text-xs text-slate-400">
+                                        <span className="italic">{dictionaryEntry.pos}</span>
+                                        {dictionaryEntry.gender && (
+                                            <span className="px-1.5 py-0.5 rounded bg-white/10 text-slate-300">
+                                                {dictionaryEntry.gender}
+                                            </span>
+                                        )}
+                                    </div>
+                                </div>
+                                <button onClick={handleSpeak} className="p-1.5 hover:bg-white/10 rounded-full transition-colors text-emerald-400">
+                                    <Volume2 size={16} />
+                                </button>
                             </div>
+
+                            <p className="text-sm text-slate-200 leading-relaxed border-l-2 border-emerald-500/30 pl-3">
+                                {dictionaryEntry.definition}
+                            </p>
 
                             <button
                                 onClick={handleAddToDeck}
                                 disabled={isAdded}
                                 className={clsx(
-                                    "w-full py-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2",
+                                    "w-full py-2 rounded-lg text-sm font-medium flex items-center justify-center gap-2 transition-all",
                                     isAdded
-                                        ? "bg-emerald-500/20 text-emerald-400"
+                                        ? "bg-emerald-500/20 text-emerald-400 cursor-default"
                                         : "bg-emerald-500 hover:bg-emerald-400 text-white shadow-lg shadow-emerald-500/20"
                                 )}
                             >
                                 {isAdded ? (
                                     <>
-                                        <Check className="w-3 h-3" /> Added to Deck
+                                        <Check size={16} />
+                                        Added to Deck
                                     </>
                                 ) : (
                                     <>
-                                        <Plus className="w-3 h-3" /> Add to Vocab
+                                        <Plus size={16} />
+                                        Add to Flashcards
                                     </>
                                 )}
                             </button>
-                        </>
+                        </div>
                     ) : (
-                        <div className="text-center py-2">
-                            <Book className="w-8 h-8 text-slate-600 mx-auto mb-2" />
-                            <p className="text-slate-400 text-sm">Word not found in dictionary.</p>
+                        <div className="text-center py-4 text-slate-400">
+                            <Book size={24} className="mx-auto mb-2 opacity-50" />
+                            <p className="text-sm">No definition found.</p>
                         </div>
                     )}
                 </div>
             }
         >
             <span
-                className={clsx(
-                    "cursor-pointer transition-colors border-b border-transparent hover:border-emerald-500/50",
-                    vocabItem ? "text-emerald-200 hover:text-emerald-400" : "text-slate-300 hover:text-white"
-                )}
                 onClick={handleOpen}
+                className={clsx(
+                    "cursor-pointer transition-all rounded px-0.5 -mx-0.5",
+                    vocabItem
+                        ? "text-emerald-400 font-medium hover:bg-emerald-500/10"
+                        : "hover:bg-white/10 hover:text-white decoration-slate-600 underline decoration-dotted underline-offset-4",
+                    isPopoverOpen && "bg-white/10 text-white"
+                )}
             >
                 {word}
             </span>

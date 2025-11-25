@@ -20,7 +20,7 @@ class GrammarWorker {
 }
 
 self.addEventListener('message', async (event) => {
-    const { type, text } = event.data;
+    const { type, text, context } = event.data;
 
     if (type === 'fix_grammar') {
         try {
@@ -36,6 +36,35 @@ self.addEventListener('message', async (event) => {
 
             const output = await generator(prompt, {
                 max_new_tokens: 100,
+            });
+
+            self.postMessage({
+                status: 'complete',
+                output: output
+            });
+
+        } catch (err) {
+            self.postMessage({
+                status: 'error',
+                error: (err as Error).message
+            });
+        }
+    }
+
+    if (type === 'explain_context') {
+        try {
+            const generator = await GrammarWorker.getInstance((data: any) => {
+                self.postMessage({
+                    status: 'loading',
+                    ...data
+                });
+            });
+
+            // Prompt for context-aware translation/explanation
+            const prompt = `Explain the meaning of the word "${text}" in the context of this sentence: "${context}". Provide a short, direct translation or definition.`;
+
+            const output = await generator(prompt, {
+                max_new_tokens: 60,
             });
 
             self.postMessage({
