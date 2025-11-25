@@ -16,7 +16,9 @@ export const getLanguageCode = (languageName?: string): string => {
         'japanese': 'ja-JP',
         'chinese': 'zh-CN',
         'korean': 'ko-KR',
-        'english': 'en-US'
+        'english': 'en-US',
+        'hindi': 'hi-IN',
+        'arabic': 'ar-SA'
     };
 
     return map[normalized] || 'en-US';
@@ -34,4 +36,30 @@ export const getBestVoice = (langCode: string): SpeechSynthesisVoice | null => {
     voice = voices.find(v => v.lang.startsWith(baseLang));
 
     return voice || null;
+};
+
+export const getNLLBCode = (languageName?: string): string => {
+    if (!languageName) return 'deu_Latn'; // Default to German if unknown
+    const normalized = languageName.toLowerCase().trim();
+
+    const map: Record<string, string> = {
+        'german': 'deu_Latn',
+        'deutsch': 'deu_Latn',
+        'spanish': 'spa_Latn',
+        'espanol': 'spa_Latn',
+        'french': 'fra_Latn',
+        'francais': 'fra_Latn',
+        'italian': 'ita_Latn',
+        'italiano': 'ita_Latn',
+        'portuguese': 'por_Latn',
+        'russian': 'rus_Cyrl',
+        'japanese': 'jpn_Jpan',
+        'chinese': 'zho_Hans', // Simplified by default
+        'korean': 'kor_Hang',
+        'english': 'eng_Latn',
+        'hindi': 'hin_Deva',
+        'arabic': 'arb_Arab'
+    };
+
+    return map[normalized] || 'eng_Latn';
 };

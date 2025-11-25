@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { Popover } from 'react-tiny-popover';
 import { getActiveSet, updateStudySet } from '../../lib/storage';
 import { lookupWord, type DictionaryEntry } from '../../lib/dictionary';
-import { getLanguageCode, getBestVoice } from '../../lib/languages';
+import { getNLLBCode } from '../../lib/languages';
+import { useTTS } from '../../hooks/useTTS';
 import { clsx } from 'clsx';
 import { Plus, Check, Book, Volume2, Loader2, Sparkles } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
@@ -55,6 +56,8 @@ const SmartWord: React.FC<SmartWordProps> = ({ word, vocabItem, sentenceContext,
     const [dictionaryEntry, setDictionaryEntry] = useState<DictionaryEntry | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [isAdded, setIsAdded] = useState(false);
+    const { speak } = useTTS();
+    const activeSet = getActiveSet();
 
     const handleOpen = async () => {
         setIsPopoverOpen(!isPopoverOpen);
@@ -64,7 +67,8 @@ const SmartWord: React.FC<SmartWordProps> = ({ word, vocabItem, sentenceContext,
             if (translationClient) {
                 setIsLoading(true);
                 try {
-                    const translation = await translationClient.translate(word);
+                    const nllbCode = getNLLBCode(activeSet?.targetLanguage);
+                    const translation = await translationClient.translate(word, nllbCode, 'eng_Latn');
                     setDictionaryEntry({
                         word: word,
                         definition: translation,
@@ -115,13 +119,7 @@ const SmartWord: React.FC<SmartWordProps> = ({ word, vocabItem, sentenceContext,
 
     const handleSpeak = (e: React.MouseEvent) => {
         e.stopPropagation();
-        const utterance = new SpeechSynthesisUtterance(word);
-        const activeSet = getActiveSet();
-        const langCode = getLanguageCode(activeSet?.targetLanguage || 'German');
-        utterance.lang = langCode;
-        const voice = getBestVoice(langCode);
-        if (voice) utterance.voice = voice;
-        window.speechSynthesis.speak(utterance);
+        speak(word, activeSet?.targetLanguage);
     };
 
     return (
@@ -143,7 +141,7 @@ const SmartWord: React.FC<SmartWordProps> = ({ word, vocabItem, sentenceContext,
                                 <div>
                                     <h3 className="font-bold text-lg text-white flex items-center gap-2">
                                         {dictionaryEntry.word}
-                                        {dictionaryEntry.pos === 'AI Context' && <Sparkles className="w-3 h-3 text-amber-400" />}
+                                        {dictionaryEntry.pos === 'Neural Translation' && <Sparkles className="w-3 h-3 text-amber-400" />}
                                     </h3>
                                     <div className="flex items-center gap-2 text-xs text-slate-400">
                                         <span className="italic">{dictionaryEntry.pos}</span>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { clsx } from 'clsx';
-import { BookOpen, MessageCircle, Newspaper, Info, X, Eye, EyeOff, Play, Pause, Loader2, Check } from 'lucide-react';
+import { BookOpen, MessageCircle, Newspaper, Info, X, Eye, EyeOff, Play, Pause, Loader2, Check, Volume2 } from 'lucide-react';
 import { TranslationClient } from '../../lib/translationClient';
 import { GrammarClient } from '../../lib/grammarClient';
 import type { ReadingContent, AnalyzedSentence } from '../../types/schema';
@@ -9,7 +9,8 @@ import Logo from '../Common/Logo';
 
 import { useReadStore } from '../../store/useReadStore';
 import { useProgressStore } from '../../store/useProgressStore';
-import { getLanguageCode, getBestVoice } from '../../lib/languages';
+import { getLanguageCode, getBestVoice, getNLLBCode } from '../../lib/languages';
+import { useTTS } from '../../hooks/useTTS';
 
 interface ReadingLoungeProps {
     content: ReadingContent;
@@ -32,6 +33,7 @@ const ReadingLounge: React.FC<ReadingLoungeProps> = ({ content }) => {
     const [modelProgress, setModelProgress] = useState<{ status: string; file: string; progress: number } | null>(null);
     const translationClientRef = useRef<TranslationClient | null>(null);
     const grammarClientRef = useRef<GrammarClient | null>(null);
+    const { speak } = useTTS();
 
     // Initialize Speech Synthesis & Translation Client
     useEffect(() => {
@@ -140,7 +142,8 @@ const ReadingLounge: React.FC<ReadingLoungeProps> = ({ content }) => {
         try {
             // Revert to TranslationClient (NLLB) for better accuracy
             if (translationClientRef.current) {
-                const translation = await translationClientRef.current.translate(word);
+                const nllbCode = getNLLBCode(content.targetLanguage);
+                const translation = await translationClientRef.current.translate(word, nllbCode, 'eng_Latn');
                 setModelLoading(false);
                 setModelProgress(null);
 
@@ -365,7 +368,16 @@ const ReadingLounge: React.FC<ReadingLoungeProps> = ({ content }) => {
 
                         <div className="space-y-6">
                             <div className="p-6 rounded-xl bg-white/5 border border-white/10 text-center">
-                                <h2 className="text-3xl font-bold text-white mb-2">{selectedWord.word}</h2>
+                                <div className="flex items-center justify-center gap-3 mb-2">
+                                    <h2 className="text-3xl font-bold text-white">{selectedWord.word}</h2>
+                                    <button
+                                        onClick={() => speak(selectedWord.word, content.targetLanguage)}
+                                        className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors text-emerald-400"
+                                        title="Listen"
+                                    >
+                                        <Volume2 size={24} />
+                                    </button>
+                                </div>
                                 <div className="text-xl text-emerald-400 min-h-[2rem] flex items-center justify-center">
                                     {modelLoading && modelProgress ? (
                                         <div className="flex flex-col items-center gap-2">

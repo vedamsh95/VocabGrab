@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, RotateCcw, Check, X, Layers } from 'lucide-react';
+import { ArrowLeft, RotateCcw, Check, X, Layers, Volume2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { getActiveSet } from '../../lib/storage';
 import Logo from '../Common/Logo';
+import { useTTS } from '../../hooks/useTTS';
 
 const FlashcardDeck: React.FC = () => {
     const activeSet = getActiveSet();
@@ -11,6 +12,7 @@ const FlashcardDeck: React.FC = () => {
     const [isFlipped, setIsFlipped] = useState(false);
     const [completed, setCompleted] = useState(false);
     const [score, setScore] = useState({ correct: 0, incorrect: 0 });
+    const { speak } = useTTS();
 
     if (!activeSet) {
         return (
@@ -110,11 +112,15 @@ const FlashcardDeck: React.FC = () => {
                                         <Layers className="w-8 h-8 text-emerald-400" />
                                     </div>
                                     <span className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4">Tap to flip</span>
-                                    {/* Swapped: Front shows Target Language (which was 'back' in schema usually, but let's assume 'front' is Question/Target for now based on user request 'front page should be language leaning') */}
-                                    {/* Actually user said: "front page should be the language leaning and flipped should be english" */}
-                                    {/* Usually 'front' in JSON is 'Apple' (English) and 'back' is 'Manzana' (Spanish). */}
-                                    {/* So we should show 'back' (Target) on the Front of the card, and 'front' (English) on the Back of the card. */}
-                                    <h3 className="text-4xl font-bold text-white">{cards[currentIndex].back}</h3>
+                                    <div className="text-center">
+                                        <h3 className="text-4xl font-bold text-white mb-4">{cards[currentIndex].back}</h3>
+                                        <button
+                                            onClick={(e) => { e.stopPropagation(); speak(cards[currentIndex].back, activeSet.targetLanguage); }}
+                                            className="p-3 rounded-full bg-white/10 hover:bg-white/20 transition-colors text-emerald-400 inline-flex"
+                                        >
+                                            <Volume2 size={24} />
+                                        </button>
+                                    </div>
                                 </div>
 
                                 {/* Back (English/Native) */}

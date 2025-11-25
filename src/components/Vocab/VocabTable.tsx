@@ -2,9 +2,9 @@ import React, { useState } from 'react';
 import { Volume2, ChevronDown, ChevronUp, ArrowLeft, Search } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { getActiveSet } from '../../lib/storage';
-import { getLanguageCode, getBestVoice } from '../../lib/languages';
 import { clsx } from 'clsx';
 import Logo from '../Common/Logo';
+import { useTTS } from '../../hooks/useTTS';
 
 const VocabTable: React.FC = () => {
     const activeSet = getActiveSet();
@@ -20,14 +20,11 @@ const VocabTable: React.FC = () => {
         );
     }
 
+    const { speak } = useTTS();
+
     const handleSpeak = (text: string, e: React.MouseEvent) => {
         e.stopPropagation();
-        const utterance = new SpeechSynthesisUtterance(text);
-        const langCode = getLanguageCode(activeSet?.targetLanguage || 'German');
-        utterance.lang = langCode;
-        const voice = getBestVoice(langCode);
-        if (voice) utterance.voice = voice;
-        window.speechSynthesis.speak(utterance);
+        speak(text, activeSet?.targetLanguage);
     };
 
     const toggleRow = (index: number) => {
