@@ -141,6 +141,9 @@ const ReadingLounge: React.FC<ReadingLoungeProps> = ({ content }) => {
             // Revert to TranslationClient (NLLB) for better accuracy
             if (translationClientRef.current) {
                 const translation = await translationClientRef.current.translate(word);
+                setModelLoading(false);
+                setModelProgress(null);
+
                 setSelectedWord({
                     word: word,
                     translation: translation,
@@ -363,7 +366,27 @@ const ReadingLounge: React.FC<ReadingLoungeProps> = ({ content }) => {
                         <div className="space-y-6">
                             <div className="p-6 rounded-xl bg-white/5 border border-white/10 text-center">
                                 <h2 className="text-3xl font-bold text-white mb-2">{selectedWord.word}</h2>
-                                <p className="text-xl text-emerald-400">{selectedWord.translation}</p>
+                                <div className="text-xl text-emerald-400 min-h-[2rem] flex items-center justify-center">
+                                    {modelLoading && modelProgress ? (
+                                        <div className="flex flex-col items-center gap-2">
+                                            <div className="flex items-center gap-2 text-sm text-emerald-300">
+                                                <Loader2 className="animate-spin w-4 h-4" />
+                                                <span>
+                                                    {modelProgress.status === 'progress'
+                                                        ? `Downloading model... ${Math.round(modelProgress.progress || 0)}%`
+                                                        : 'Initializing AI...'}
+                                                </span>
+                                            </div>
+                                            {modelProgress.file && (
+                                                <span className="text-xs text-slate-500 max-w-[200px] truncate">
+                                                    {modelProgress.file}
+                                                </span>
+                                            )}
+                                        </div>
+                                    ) : (
+                                        selectedWord.translation
+                                    )}
+                                </div>
                                 {selectedWord.grammarTip && (
                                     <div className="mt-4 pt-4 border-t border-white/10">
                                         <span className="px-2 py-1 rounded bg-white/10 text-xs text-slate-400">

@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, CheckCircle2, RotateCcw, LayoutGrid, Type, ListChecks, Zap, Puzzle } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, RotateCcw, LayoutGrid, Type, ListChecks, Zap, Puzzle, Loader2 } from 'lucide-react';
 import { getActiveSet } from '../../lib/storage';
 import { useProgressStore } from '../../store/useProgressStore';
 import { clsx } from 'clsx';
@@ -23,11 +23,15 @@ const PracticeArena: React.FC = () => {
     const addXP = useProgressStore(state => state.addXP);
     const [resetKey, setResetKey] = useState(0);
     const [translationClient, setTranslationClient] = useState<TranslationClient | null>(null);
+    const [modelProgress, setModelProgress] = useState<{ status: string; file: string; progress: number } | null>(null);
 
     // Initialize Translation Client
     React.useEffect(() => {
-        const client = new TranslationClient((_data) => {
-            // Optional: Handle loading state
+        const client = new TranslationClient((data) => {
+            setModelProgress(data);
+            if (data.status === 'ready') {
+                setModelProgress(null);
+            }
         });
         setTranslationClient(client);
 
@@ -253,6 +257,20 @@ const PracticeArena: React.FC = () => {
                     </motion.div>
                 </AnimatePresence>
             </div>
+            {/* Model Download Progress Toast */}
+            {modelProgress && (modelProgress.status === 'progress' || modelProgress.status === 'initiate') && (
+                <div className="fixed bottom-6 right-6 bg-slate-900/95 border border-emerald-500/30 p-4 rounded-xl shadow-2xl z-50 flex items-center gap-3 animate-in slide-in-from-bottom-5 fade-in duration-300 backdrop-blur-md">
+                    <Loader2 className="animate-spin text-emerald-400 w-5 h-5" />
+                    <div>
+                        <p className="text-sm font-bold text-white">Downloading AI Model</p>
+                        <p className="text-xs text-slate-400">
+                            {modelProgress.status === 'progress'
+                                ? `${Math.round(modelProgress.progress || 0)}% completed`
+                                : 'Initializing...'}
+                        </p>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
