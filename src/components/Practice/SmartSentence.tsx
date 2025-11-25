@@ -6,15 +6,15 @@ import { getLanguageCode, getBestVoice } from '../../lib/languages';
 import { clsx } from 'clsx';
 import { Plus, Check, Book, Volume2, Loader2, Sparkles } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
-import type { GrammarClient } from '../../lib/grammarClient';
+import type { TranslationClient } from '../../lib/translationClient';
 
 interface SmartSentenceProps {
     sentence: string;
     className?: string;
-    grammarClient?: GrammarClient | null;
+    translationClient?: TranslationClient | null;
 }
 
-const SmartSentence: React.FC<SmartSentenceProps> = ({ sentence, className, grammarClient }) => {
+const SmartSentence: React.FC<SmartSentenceProps> = ({ sentence, className, translationClient }) => {
     const activeSet = getActiveSet();
     const vocabList = activeSet?.vocabulary || [];
 
@@ -35,7 +35,7 @@ const SmartSentence: React.FC<SmartSentenceProps> = ({ sentence, className, gram
                         word={token}
                         vocabItem={vocabItem}
                         sentenceContext={sentence}
-                        grammarClient={grammarClient}
+                        translationClient={translationClient}
                     />
                 );
             })}
@@ -47,10 +47,10 @@ interface SmartWordProps {
     word: string;
     vocabItem?: { word: string; translation: string; grammarTip?: string };
     sentenceContext: string;
-    grammarClient?: GrammarClient | null;
+    translationClient?: TranslationClient | null;
 }
 
-const SmartWord: React.FC<SmartWordProps> = ({ word, vocabItem, sentenceContext, grammarClient }) => {
+const SmartWord: React.FC<SmartWordProps> = ({ word, vocabItem, sentenceContext, translationClient }) => {
     const [isPopoverOpen, setIsPopoverOpen] = useState(false);
     const [dictionaryEntry, setDictionaryEntry] = useState<DictionaryEntry | null>(null);
     const [isLoading, setIsLoading] = useState(false);
@@ -61,14 +61,14 @@ const SmartWord: React.FC<SmartWordProps> = ({ word, vocabItem, sentenceContext,
         if (!isPopoverOpen && !vocabItem) {
             // Perform lookup when opening if not already in vocab
 
-            if (grammarClient) {
+            if (translationClient) {
                 setIsLoading(true);
                 try {
-                    const explanation = await grammarClient.explainContext(word, sentenceContext);
+                    const translation = await translationClient.translate(word);
                     setDictionaryEntry({
                         word: word,
-                        definition: explanation,
-                        pos: 'AI Context',
+                        definition: translation,
+                        pos: 'Neural Translation',
                         gender: ''
                     });
                 } catch (err) {

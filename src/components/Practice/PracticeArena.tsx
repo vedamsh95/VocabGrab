@@ -12,7 +12,7 @@ import ClozeInput from './ClozeInput';
 import ChoiceGroup from './ChoiceGroup';
 import SpeedMatchGame from './SpeedMatchGame';
 import SentenceBuilderGame from './SentenceBuilderGame';
-import { GrammarClient } from '../../lib/grammarClient';
+import { TranslationClient } from '../../lib/translationClient';
 
 type Tab = 'vocab' | 'fill' | 'choice' | 'speed' | 'builder';
 
@@ -22,15 +22,14 @@ const PracticeArena: React.FC = () => {
     const [progress, setProgress] = useState(0);
     const addXP = useProgressStore(state => state.addXP);
     const [resetKey, setResetKey] = useState(0);
-    const [grammarClient, setGrammarClient] = useState<GrammarClient | null>(null);
+    const [translationClient, setTranslationClient] = useState<TranslationClient | null>(null);
 
-    // Initialize Grammar Client
+    // Initialize Translation Client
     React.useEffect(() => {
-        const client = new GrammarClient((_data) => {
-            // Optional: Handle loading state if needed globally
-            // console.log("Grammar Client:", data.status);
+        const client = new TranslationClient((_data) => {
+            // Optional: Handle loading state
         });
-        setGrammarClient(client);
+        setTranslationClient(client);
 
         return () => {
             client.terminate();
@@ -208,9 +207,9 @@ const PracticeArena: React.FC = () => {
                                             <div key={ex.id} className="glass-card p-6 border-l-4 border-l-emerald-500/50">
                                                 <div className="flex items-baseline flex-wrap gap-1 text-lg leading-relaxed">
                                                     <span className="text-slate-400 font-mono text-sm mr-2">{i + 1}.</span>
-                                                    <SmartSentence sentence={parts[0]} grammarClient={grammarClient} />
+                                                    <SmartSentence sentence={parts[0]} translationClient={translationClient} />
                                                     <ClozeInput answer={ex.answer} onComplete={handleQuestionComplete} />
-                                                    {parts[1] && <SmartSentence sentence={parts[1]} grammarClient={grammarClient} />}
+                                                    {parts[1] && <SmartSentence sentence={parts[1]} translationClient={translationClient} />}
                                                 </div>
                                             </div>
                                         );
@@ -229,7 +228,7 @@ const PracticeArena: React.FC = () => {
                                             <div className="flex items-start gap-3">
                                                 <span className="text-slate-400 font-mono text-sm mt-1">{i + 1}.</span>
                                                 <div className="flex-1">
-                                                    <SmartSentence sentence={ex.question} className="mb-4" grammarClient={grammarClient} />
+                                                    <SmartSentence sentence={ex.question} className="mb-4" translationClient={translationClient} />
                                                     <ChoiceGroup
                                                         options={ex.options}
                                                         correctAnswer={ex.answer}

@@ -129,37 +129,39 @@ const ReadingLounge: React.FC<ReadingLoungeProps> = ({ content }) => {
         }
     };
 
-    const handleWordClick = async (word: string, sentenceContext: string, e: React.MouseEvent) => {
+    const handleWordClick = async (word: string, e: React.MouseEvent) => {
         e.stopPropagation();
         setSelectedWord({
             word: word,
-            translation: "Analyzing context...",
+            translation: "Translating...",
             grammarTip: "Neural AI"
         });
 
         try {
-            // Priority: Use GrammarClient for context-aware explanation
-            if (grammarClientRef.current) {
-                const explanation = await grammarClientRef.current.explainContext(word, sentenceContext);
-                setSelectedWord({
-                    word: word,
-                    translation: explanation,
-                    grammarTip: "Context Aware"
-                });
-            } else if (translationClientRef.current) {
-                // Fallback to simple translation
+            // Revert to TranslationClient (NLLB) for better accuracy
+            if (translationClientRef.current) {
                 const translation = await translationClientRef.current.translate(word);
                 setSelectedWord({
                     word: word,
                     translation: translation,
                     grammarTip: "Direct Translation"
                 });
+
+                // Optional: We could still use GrammarClient for a secondary "Context Tip" if desired, 
+                // but for now let's stick to the reliable translation.
+            } else {
+                // Fallback
+                setSelectedWord({
+                    word: word,
+                    translation: "Model not ready",
+                    grammarTip: "Offline"
+                });
             }
         } catch (err) {
             console.error(err);
             setSelectedWord({
                 word: word,
-                translation: "Error analyzing",
+                translation: "Error translating",
                 grammarTip: "Offline Mode"
             });
         }
@@ -280,7 +282,7 @@ const ReadingLounge: React.FC<ReadingLoungeProps> = ({ content }) => {
                                         return (
                                             <span
                                                 key={idx}
-                                                onClick={(e) => handleWordClick(token, item.sentence, e)}
+                                                onClick={(e) => handleWordClick(token, e)}
                                                 className={clsx(
                                                     "cursor-pointer hover:text-emerald-400 hover:underline decoration-emerald-500/50 underline-offset-4 transition-colors",
                                                     selectedWord?.word === token ? "text-emerald-400 font-bold" : "text-slate-200"
