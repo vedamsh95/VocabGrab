@@ -143,6 +143,7 @@ export interface StudySet {
     readingSections?: ReadingContent[];
     grammarLessons?: GrammarLesson[];
     createdAt: string;
+    lastUsed?: string;
 }
 
 export interface AppState {

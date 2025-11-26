@@ -15,6 +15,9 @@ const Library: React.FC = () => {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const navigate = useNavigate();
 
+    const [sortBy, setSortBy] = useState<'smart' | 'date' | 'lastUsed' | 'difficulty'>('smart');
+    const [filterLang, setFilterLang] = useState<string>('all');
+
     const loadData = () => {
         setSets(getAllSets());
         const active = getActiveSet();
@@ -103,6 +106,45 @@ const Library: React.FC = () => {
         reader.readAsText(file);
     };
 
+    // --- Sorting & Filtering Logic ---
+    const getFilteredAndSortedSets = () => {
+        let processed = [...sets];
+
+        // Filter
+        if (filterLang !== 'all') {
+            processed = processed.filter(s => s.targetLanguage === filterLang);
+        }
+
+        // Sort
+        processed.sort((a, b) => {
+            switch (sortBy) {
+                case 'date':
+                    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+                case 'lastUsed':
+                    const timeA = a.lastUsed ? new Date(a.lastUsed).getTime() : 0;
+                    const timeB = b.lastUsed ? new Date(b.lastUsed).getTime() : 0;
+                    return timeB - timeA;
+                case 'difficulty':
+                    // Simple alphabetical sort for difficulty for now, can be enhanced
+                    return (a.difficulty || '').localeCompare(b.difficulty || '');
+                case 'smart':
+                default:
+                    // Smart Sort: Group by Language, then by Last Used
+                    if (a.targetLanguage !== b.targetLanguage) {
+                        return a.targetLanguage.localeCompare(b.targetLanguage);
+                    }
+                    const smartTimeA = a.lastUsed ? new Date(a.lastUsed).getTime() : new Date(a.createdAt).getTime();
+                    const smartTimeB = b.lastUsed ? new Date(b.lastUsed).getTime() : new Date(b.createdAt).getTime();
+                    return smartTimeB - smartTimeA;
+            }
+        });
+
+        return processed;
+    };
+
+    const displayedSets = getFilteredAndSortedSets();
+    const uniqueLanguages = Array.from(new Set(sets.map(s => s.targetLanguage)));
+
     return (
         <div className="p-6 md:p-8 max-w-[1600px] mx-auto pb-32 relative">
             <header className="mb-8 flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
@@ -113,28 +155,62 @@ const Library: React.FC = () => {
                         <p className="text-slate-400">Manage your study sets and progress.</p>
                     </div>
                 </div>
-                <div className="flex flex-wrap items-center gap-3">
-                    <div className="flex items-center gap-2 mr-2">
+                <div className="flex flex-col items-end gap-3">
+                    {/* Controls Row */}
+                    <div className="flex items-center gap-2">
+                        {/* Language Filter */}
+                        <select
+                            value={filterLang}
+                            onChange={(e) => setFilterLang(e.target.value)}
+                            className="bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-sm text-slate-300 focus:outline-none focus:border-emerald-500"
+                        >
+                            <option value="all">All Languages</option>
+                            {uniqueLanguages.map(lang => (
+                                <option key={lang} value={lang}>{lang}</option>
+                            ))}
+                        </select>
+
+                        {/* Sort Dropdown */}
+                        <select
+                            value={sortBy}
+                            onChange={(e) => setSortBy(e.target.value as any)}
+                            className="bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-sm text-slate-300 focus:outline-none focus:border-emerald-500"
+                        >
+                            <option value="smart">✨ Smart Sort</option>
+                            <option value="date">📅 Date Added</option>
+                            <option value="lastUsed">⏱️ Last Used</option>
+                            <option value="difficulty">📊 Difficulty</option>
+                        </select>
+
+                        <Link to="/import" className="btn-primary px-4 py-2 flex items-center gap-2 text-sm ml-2">
+                            <Plus className="w-4 h-4" />
+                            New Set
+                        </Link>
+                    </div>
+
+                    {/* Secondary Actions */}
+                    <div className="flex items-center gap-2">
                         <button
                             onClick={() => handleExport(true)}
-                            className="btn-secondary px-3 py-2 text-xs flex items-center gap-2"
+                            className="text-xs text-slate-500 hover:text-white transition-colors flex items-center gap-1"
                             title="Export all sets"
                         >
-                            <Download className="w-4 h-4" /> Export All
+                            <Download className="w-3 h-3" /> Export All
                         </button>
                         {selectedSets.size > 0 && (
                             <button
                                 onClick={() => handleExport(false)}
-                                className="btn-secondary px-3 py-2 text-xs flex items-center gap-2 text-emerald-400 border-emerald-500/30 bg-emerald-500/10"
+                                className="text-xs text-emerald-400 hover:text-emerald-300 transition-colors flex items-center gap-1"
                             >
-                                <Download className="w-4 h-4" /> Export Selected ({selectedSets.size})
+                                <Download className="w-3 h-3" /> Export Selected ({selectedSets.size})
                             </button>
                         )}
+                        <span className="text-slate-700">|</span>
                         <button
                             onClick={() => fileInputRef.current?.click()}
-                            className="btn-secondary px-3 py-2 text-xs flex items-center gap-2"
+                            className="text-xs text-slate-500 hover:text-white transition-colors flex items-center gap-1"
                         >
-                            <Upload className="w-4 h-4" /> Restore
+                            <Upload className="w-3 h-3" /> Restore
                         </button>
                         <input
                             type="file"
@@ -143,18 +219,7 @@ const Library: React.FC = () => {
                             accept=".json"
                             className="hidden"
                         />
-                        <button
-                            onClick={() => setShowWhyExport(true)}
-                            className="p-2 text-slate-500 hover:text-slate-300 transition-colors"
-                            title="Why Export?"
-                        >
-                            <HelpCircle className="w-5 h-5" />
-                        </button>
                     </div>
-                    <Link to="/import" className="btn-primary px-4 py-2 flex items-center gap-2 text-sm">
-                        <Plus className="w-4 h-4" />
-                        New Set
-                    </Link>
                 </div>
             </header>
 
@@ -208,7 +273,7 @@ const Library: React.FC = () => {
                 </div>
             ) : (
                 <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                    {sets.map((set) => (
+                    {displayedSets.map((set) => (
                         <motion.div
                             key={set.id}
                             layoutId={set.id}

@@ -31,6 +31,30 @@ export const getActiveSet = (): StudySet | null => {
     }
 };
 
+// Set the active study set ID
+export const setActiveSetId = (id: string | null): void => {
+    try {
+        if (id) {
+            localStorage.setItem(ACTIVE_SET_KEY, id);
+
+            // Update lastUsed timestamp
+            const sets = getAllSets();
+            const index = sets.findIndex(s => s.id === id);
+            if (index !== -1) {
+                sets[index].lastUsed = new Date().toISOString();
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(sets));
+            }
+        } else {
+            localStorage.removeItem(ACTIVE_SET_KEY);
+        }
+
+        // Dispatch a custom event so components can react to storage changes
+        window.dispatchEvent(new Event('storage-update'));
+    } catch (e) {
+        console.error("Failed to set active set", e);
+    }
+};
+
 // Add a new study set (Appends instead of overwrites)
 export const addStudySet = (newSet: StudySet): void => {
     try {
@@ -73,19 +97,12 @@ export const deleteStudySet = (id: string): void => {
             if (updatedSets.length > 0) {
                 setActiveSetId(updatedSets[0].id);
             } else {
-                localStorage.removeItem(ACTIVE_SET_KEY);
+                setActiveSetId(null);
             }
         }
     } catch (e) {
         console.error("Failed to delete study set", e);
     }
-};
-
-// Set the active study set ID
-export const setActiveSetId = (id: string): void => {
-    localStorage.setItem(ACTIVE_SET_KEY, id);
-    // Dispatch a custom event so components can react to storage changes
-    window.dispatchEvent(new Event('storage-update'));
 };
 
 // Legacy support wrapper (to avoid breaking existing code temporarily)
