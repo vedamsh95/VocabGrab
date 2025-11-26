@@ -15,7 +15,15 @@ Schema:
   "title": "Topic Name",
   "targetLanguage": "German",
   "vocabulary": [
-    { "word": "Apfel", "translation": "Apple", "exampleSentence": "Ich esse einen Apfel.", "grammarTip": "Masculine noun (der Apfel)" }
+    { 
+      "word": "Apfel", 
+      "translation": "Apple", 
+      "exampleSentence": "Ich esse einen Apfel.", 
+      "grammarTip": "Masculine noun (der Apfel)",
+      "morphology": [
+        { "segment": "Apfel", "gloss": "apple", "type": "root" }
+      ]
+    }
   ],
   "flashcards": [
     { "front": "Apfel", "back": "Apple" }
@@ -87,6 +95,7 @@ Pedagogical Guidelines:
 2. Inductive Approach: Prioritize showing examples before explaining the rule.
 3. Contrastive Analysis: Explicitly highlight "false friends" or common errors learners make with this specific topic.
 4. Tone: Encouraging, clear, and culturally relevant to the target language.
+5. Linguistic Precision: Use Universal Dependencies for structure and Leipzig Glossing Rules for morphology (split roots/suffixes).
 
 Output ONLY valid JSON.
 Schema:
@@ -112,7 +121,15 @@ Schema:
         "inductive_discovery": {
           "description": "Examples...",
           "examples": [
-            { "sentence": "...", "translation": "...", "highlight_indices": [0, 5] }
+            { 
+              "sentence": "...", 
+              "translation": "...", 
+              "highlight_indices": [0, 5],
+              "morphology": [
+                { "segment": "...", "gloss": "...", "type": "root" },
+                { "segment": "...", "gloss": "...", "type": "suffix" }
+              ]
+            }
           ]
         },
         "deductive_explanation": {

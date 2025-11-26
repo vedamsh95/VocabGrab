@@ -8,6 +8,8 @@ import { clsx } from 'clsx';
 import { Plus, Check, Book, Volume2, Loader2, Sparkles } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
 import type { TranslationClient } from '../../lib/translationClient';
+import MorphologyViewer from '../Grammar/MorphologyViewer';
+import type { MorphologySegment } from '../../types/schema';
 
 interface SmartSentenceProps {
     sentence: string;
@@ -46,9 +48,14 @@ const SmartSentence: React.FC<SmartSentenceProps> = ({ sentence, className, tran
 
 interface SmartWordProps {
     word: string;
-    vocabItem?: { word: string; translation: string; grammarTip?: string };
+interface SmartWordProps {
+    word: string;
+    vocabItem?: { word: string; translation: string; grammarTip?: string; morphology?: MorphologySegment[] };
     sentenceContext: string;
     translationClient?: TranslationClient | null;
+}
+sentenceContext: string;
+translationClient ?: TranslationClient | null;
 }
 
 const SmartWord: React.FC<SmartWordProps> = ({ word, vocabItem, sentenceContext, translationClient }) => {
@@ -160,6 +167,13 @@ const SmartWord: React.FC<SmartWordProps> = ({ word, vocabItem, sentenceContext,
                             <p className="text-sm text-slate-200 leading-relaxed border-l-2 border-emerald-500/30 pl-3">
                                 {dictionaryEntry.definition}
                             </p>
+
+                            {vocabItem?.morphology && (
+                                <div className="mt-2 pt-2 border-t border-white/10">
+                                    <p className="text-xs font-bold text-slate-500 uppercase mb-1">Morphology</p>
+                                    <MorphologyViewer segments={vocabItem.morphology} />
+                                </div>
+                            )}
 
                             <button
                                 onClick={handleAddToDeck}

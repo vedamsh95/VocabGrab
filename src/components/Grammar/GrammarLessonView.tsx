@@ -4,13 +4,26 @@ import { Book, Lightbulb, AlertTriangle, CheckCircle, Play, Pause, GraduationCap
 import { clsx } from 'clsx';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTTS } from '../../hooks/useTTS';
+import SmartSentence from '../Practice/SmartSentence';
+import MorphologyViewer from './MorphologyViewer';
 
 const GrammarLessonView: React.FC = () => {
     const activeSet = getActiveSet();
     const lessons = activeSet?.grammarLessons || [];
     const [currentLessonIndex] = useState(0);
     const [currentSection, setCurrentSection] = useState<'hook' | 'inductive' | 'deductive' | 'contrastive' | 'practice'>('hook');
+    const [practiceState, setPracticeState] = useState<Record<number, { selected: string, isCorrect: boolean }>>({});
     const { speak, isSpeaking, stop } = useTTS();
+
+    const handleOptionSelect = (exerciseIndex: number, option: string, correctAnswer: string) => {
+        if (practiceState[exerciseIndex]) return; // Prevent changing answer
+
+        const isCorrect = option === correctAnswer;
+        setPracticeState(prev => ({
+            ...prev,
+            [exerciseIndex]: { selected: option, isCorrect }
+        }));
+    };
 
     if (lessons.length === 0) {
         return (
@@ -100,9 +113,9 @@ const GrammarLessonView: React.FC = () => {
                                         >
                                             {isSpeaking ? <Pause size={20} /> : <Play size={20} />}
                                         </button>
-                                        <p className="text-lg text-white leading-relaxed whitespace-pre-wrap font-medium">
-                                            {pedagogy.hook.content}
-                                        </p>
+                                        <div className="text-lg text-white leading-relaxed font-medium">
+                                            <SmartSentence sentence={pedagogy.hook.content} />
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -128,6 +141,11 @@ const GrammarLessonView: React.FC = () => {
                                                         {ex.sentence}
                                                     </p>
                                                     <p className="text-slate-400 text-sm">{ex.translation}</p>
+                                                    {ex.morphology && (
+                                                        <div className="mt-3">
+                                                            <MorphologyViewer segments={ex.morphology} />
+                                                        </div>
+                                                    )}
                                                 </div>
                                                 <button
                                                     onClick={() => speak(ex.sentence, lesson_meta.target_language)}
@@ -234,14 +252,37 @@ const GrammarLessonView: React.FC = () => {
 
                                                 {ex.options ? (
                                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                                        {ex.options.map((opt, i) => (
-                                                            <button
-                                                                key={i}
-                                                                className="p-3 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-left text-slate-300 transition-colors hover:border-emerald-500/30 hover:text-emerald-400"
-                                                            >
-                                                                {opt}
-                                                            </button>
-                                                        ))}
+                                                        {ex.options.map((opt, i) => {
+                                                            const state = practiceState[idx];
+                                                            const isSelected = state?.selected === opt;
+                                                            const isCorrectAnswer = opt === ex.correct_answer;
+
+                                                            let btnClass = "bg-white/5 border-white/10 text-slate-300 hover:bg-white/10";
+
+                                                            if (state) {
+                                                                if (isCorrectAnswer) btnClass = "bg-emerald-500/20 border-emerald-500 text-emerald-400";
+                                                                else if (isSelected && !state.isCorrect) btnClass = "bg-red-500/20 border-red-500 text-red-400";
+                                                                else btnClass = "bg-white/5 border-white/10 text-slate-500 opacity-50";
+                                                            }
+
+                                                            return (
+                                                                <button
+                                                                    key={i}
+                                                                    onClick={() => handleOptionSelect(idx, opt, ex.correct_answer || '')}
+                                                                    disabled={!!state}
+                                                                    className={clsx(
+                                                                        "p-3 rounded-lg border text-left transition-all",
+                                                                        btnClass
+                                                                    )}
+                                                                >
+                                                                    <div className="flex items-center justify-between">
+                                                                        {opt}
+                                                                        {state && isCorrectAnswer && <CheckCircle size={16} />}
+                                                                        {state && isSelected && !state.isCorrect && <AlertTriangle size={16} />}
+                                                                    </div>
+                                                                </button>
+                                                            );
+                                                        })}
                                                     </div>
                                                 ) : (
                                                     <input

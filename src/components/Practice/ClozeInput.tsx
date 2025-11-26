@@ -24,7 +24,10 @@ const ClozeInput: React.FC<ClozeInputProps> = ({ answer, onComplete }) => {
     const checkAnswer = () => {
         if (status !== 'idle' || !value.trim()) return;
 
-        const isCorrect = value.trim().toLowerCase() === answer.toLowerCase();
+        // Strip parenthetical metadata (e.g., "aus sehen (accusative)") -> "aus sehen"
+        const cleanAnswer = answer.replace(/\s*\(.*?\)/g, '').trim();
+        const isCorrect = value.trim().toLowerCase() === cleanAnswer.toLowerCase();
+
         setStatus(isCorrect ? 'correct' : 'incorrect');
         onComplete(isCorrect);
     };

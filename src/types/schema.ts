@@ -3,6 +3,13 @@ export interface VocabItem {
     translation: string;
     exampleSentence?: string;
     grammarTip?: string;
+    morphology?: MorphologySegment[];
+}
+
+export interface MorphologySegment {
+    segment: string;
+    gloss: string; // e.g., "have", "SBJV.PST.1SG"
+    type: 'root' | 'prefix' | 'suffix' | 'infix';
 }
 
 export interface Flashcard {
@@ -74,6 +81,7 @@ export interface GrammarLesson {
                 sentence: string;
                 translation: string;
                 highlight_indices: number[];
+                morphology?: MorphologySegment[];
             }[];
         };
         deductive_explanation: {
