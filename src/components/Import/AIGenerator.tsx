@@ -75,23 +75,6 @@ Schema:
   ]
 }
 Generate a short story or conversation with 8-12 sentences.
-`;
-
-const SYSTEM_PROMPT_GRAMMAR = `
-You are an expert Applied Linguist and Curriculum Designer specializing in Second Language Acquisition (SLA).
-Your goal is to generate a high-quality, modern grammar lesson structured in strict JSON format using the PPP Method (Presentation, Practice, Production).
-
-Pedagogical Guidelines:
-1. Context First: Always start with a functional "Hook" (a situation where the grammar is strictly necessary).
-2. Inductive Approach: Prioritize showing examples before explaining the rule.
-3. Contrastive Analysis: Explicitly highlight "false friends" or common errors learners make with this specific topic.
-4. Tone: Encouraging, clear, and culturally relevant to the target language.
-5. Linguistic Precision: Use Universal Dependencies for structure and Leipzig Glossing Rules for morphology (split roots/suffixes).
-
-Output ONLY valid JSON.
-Schema:
-{
-  "title": "Topic Name",
   "targetLanguage": "German",
   "difficulty": "B1",
   "grammarLessons": [

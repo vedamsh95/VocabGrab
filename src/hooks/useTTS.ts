@@ -10,7 +10,9 @@ export const useTTS = () => {
         // Cancel any current speech
         window.speechSynthesis.cancel();
 
-        const utterance = new SpeechSynthesisUtterance(text);
+        // Strip markdown symbols (asterisks, underscores, etc.) for clean speech
+        const cleanText = text.replace(/[*_#`]/g, '');
+        const utterance = new SpeechSynthesisUtterance(cleanText);
         const langCode = getLanguageCode(languageName);
         utterance.lang = langCode;
 

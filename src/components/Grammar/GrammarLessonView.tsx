@@ -11,7 +11,7 @@ const GrammarLessonView: React.FC = () => {
     const activeSet = getActiveSet();
     const lessons = activeSet?.grammarLessons || [];
     const [currentLessonIndex] = useState(0);
-    const [currentSection, setCurrentSection] = useState<'hook' | 'inductive' | 'deductive' | 'contrastive' | 'practice'>('hook');
+    const [currentSection, setCurrentSection] = useState<'hook' | 'inductive' | 'deductive' | 'contrastive' | 'practice'>('deductive');
     const [practiceState, setPracticeState] = useState<Record<number, { selected: string, isCorrect: boolean }>>({});
     const { speak, isSpeaking, stop } = useTTS();
 
