@@ -10,7 +10,6 @@ const LiveTutor: React.FC = () => {
     const [status, setStatus] = useState<'idle' | 'connecting' | 'connected' | 'error'>('idle');
     const [error, setError] = useState<string | null>(null);
     const clientRef = useRef<LiveClient | null>(null);
-    const canvasRef = useRef<HTMLCanvasElement>(null);
 
     useEffect(() => {
         return () => {
