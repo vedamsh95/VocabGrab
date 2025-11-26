@@ -129,15 +129,15 @@ export class LiveClient extends EventEmitter {
                 }
             });
 
+            // Check if still connected after async operation
+            if (!this.isConnected || !this.audioContext) {
+                if (this.mediaStream) {
+                    this.mediaStream.getTracks().forEach(track => track.stop());
+                }
+                return;
+            }
+
             // Load AudioWorklet for PCM processing
-            // Note: In a real app, this URL needs to point to a served file. 
-            // For now, we'll use a script processor or assume the worklet is available.
-            // We'll use a simple ScriptProcessor for prototype simplicity if Worklet fails, 
-            // but Worklet is better.
-
-            // For this prototype, let's use a ScriptProcessorNode (deprecated but easier to inline without external files)
-            // or we can create a Blob URL for the worklet.
-
             const workletCode = `
                 class PCMProcessor extends AudioWorkletProcessor {
                     process(inputs, outputs, parameters) {
@@ -162,6 +162,9 @@ export class LiveClient extends EventEmitter {
             const workletUrl = URL.createObjectURL(blob);
 
             await this.audioContext.audioWorklet.addModule(workletUrl);
+
+            // Check again after async module load
+            if (!this.isConnected || !this.audioContext) return;
 
             this.audioInput = this.audioContext.createMediaStreamSource(this.mediaStream);
             this.audioWorklet = new AudioWorkletNode(this.audioContext, 'pcm-processor');
