@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { BookOpen, Upload, Dumbbell, Layers, Save, ArrowRight, Sparkles } from 'lucide-react';
+import { BookOpen, Upload, Dumbbell, Layers, Save, ArrowRight, Sparkles, Settings } from 'lucide-react';
 
 const GuidePage: React.FC = () => {
     return (
@@ -13,13 +13,56 @@ const GuidePage: React.FC = () => {
             </header>
 
             <div className="space-y-16">
-                {/* Step 1: AI Generator */}
+                {/* Step 0: Setup & Dashboard */}
                 <section className="flex flex-col md:flex-row gap-8 items-center">
+                    <div className="flex-1">
+                        <div className="w-12 h-12 rounded-xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center mb-4">
+                            <Dumbbell size={24} />
+                        </div>
+                        <h2 className="text-2xl font-bold text-white mb-3">1. Smart Dashboard</h2>
+                        <p className="text-slate-400 leading-relaxed mb-4">
+                            Your personal command center. We've redesigned it to be smarter and more efficient.
+                        </p>
+                        <ul className="space-y-3 text-slate-300 text-sm">
+                            <li className="flex items-start gap-2">
+                                <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 mt-2"></span>
+                                <div>
+                                    <strong>Smart Focus Tile</strong>: The large tile in the center. It intelligently suggests your next move (e.g., "Review" if you haven't practiced in 3 days).
+                                </div>
+                            </li>
+                            <li className="flex items-start gap-2">
+                                <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 mt-2"></span>
+                                <div>
+                                    <strong>Stats Slider</strong>: Tracks your Streak, XP, and Words Learned. It auto-plays, or you can swipe through it.
+                                </div>
+                            </li>
+                            <li className="flex items-start gap-2">
+                                <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 mt-2"></span>
+                                <div>
+                                    <strong>Quick Actions</strong>: Click the <span className="inline-block p-0.5 bg-white/10 rounded"><Settings size={10} className="inline" /></span> icon to customize which shortcuts appear on your dashboard.
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                    <div className="flex-1 glass-panel p-6 rounded-2xl border border-white/10 bg-gradient-to-br from-indigo-900/20 to-slate-900">
+                        <div className="flex items-center gap-2 mb-4">
+                            <div className="px-2 py-1 rounded-full bg-white/5 border border-white/10 text-[10px] text-slate-400 font-mono uppercase tracking-wider">
+                                AI Recommended
+                            </div>
+                        </div>
+                        <div className="text-xl font-bold text-white mb-1">Time to Review</div>
+                        <div className="text-sm text-slate-400 mb-4">It's been 3 days. Keep the memory fresh!</div>
+                        <div className="w-full h-10 bg-indigo-500 rounded-lg opacity-50"></div>
+                    </div>
+                </section>
+
+                {/* Step 1: AI Generator */}
+                <section className="flex flex-col md:flex-row-reverse gap-8 items-center">
                     <div className="flex-1">
                         <div className="w-12 h-12 rounded-xl bg-purple-500/20 text-purple-400 flex items-center justify-center mb-4">
                             <Sparkles size={24} />
                         </div>
-                        <h2 className="text-2xl font-bold text-white mb-3">1. AI Generator</h2>
+                        <h2 className="text-2xl font-bold text-white mb-3">2. AI Generator</h2>
                         <p className="text-slate-400 leading-relaxed mb-4">
                             Create custom study sets instantly using Google Gemini.
                         </p>
@@ -46,12 +89,12 @@ const GuidePage: React.FC = () => {
                 </section>
 
                 {/* Step 2: Import */}
-                <section className="flex flex-col md:flex-row-reverse gap-8 items-center">
+                <section className="flex flex-col md:flex-row gap-8 items-center">
                     <div className="flex-1">
                         <div className="w-12 h-12 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center mb-4">
                             <Upload size={24} />
                         </div>
-                        <h2 className="text-2xl font-bold text-white mb-3">2. Import JSON</h2>
+                        <h2 className="text-2xl font-bold text-white mb-3">3. Import JSON</h2>
                         <p className="text-slate-400 leading-relaxed mb-4">
                             Prefer ChatGPT? You can still import manually.
                         </p>
@@ -75,38 +118,41 @@ const GuidePage: React.FC = () => {
                     </div>
                 </section>
 
-                {/* Step 3: Learn */}
-                <section className="flex flex-col md:flex-row gap-8 items-center">
+                {/* Step 3: Library & Sorting */}
+                <section className="flex flex-col md:flex-row-reverse gap-8 items-center">
                     <div className="flex-1">
-                        <div className="w-12 h-12 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center mb-4">
+                        <div className="w-12 h-12 rounded-xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center mb-4">
                             <Layers size={24} />
                         </div>
-                        <h2 className="text-2xl font-bold text-white mb-3">3. Master Vocabulary</h2>
+                        <h2 className="text-2xl font-bold text-white mb-3">4. Library Management</h2>
                         <p className="text-slate-400 leading-relaxed mb-4">
-                            Your imported words turn into interactive <strong>Flashcards</strong> and a <strong>Vocabulary Table</strong>.
+                            Keep your study sets organized with advanced tools.
                         </p>
                         <ul className="space-y-2 text-slate-300 text-sm">
-                            <li className="flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span> Click cards to flip them.</li>
-                            <li className="flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span> Mark as "Known" to track progress.</li>
-                            <li className="flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span> Use TTS (Text-to-Speech) to hear pronunciation.</li>
+                            <li className="flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-cyan-500"></span> <strong>Smart Sort</strong>: Automatically groups sets by language and usage.</li>
+                            <li className="flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-cyan-500"></span> <strong>Filtering</strong>: Use the dropdowns to filter by Language or Difficulty.</li>
+                            <li className="flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-cyan-500"></span> <strong>Export/Restore</strong>: Always backup your data using the Export buttons!</li>
                         </ul>
                     </div>
-                    <div className="flex-1 h-48 glass-panel rounded-2xl border border-white/10 flex items-center justify-center relative overflow-hidden">
-                        <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-purple-500/10"></div>
-                        <div className="text-center">
-                            <div className="text-2xl font-bold text-white mb-1">Haus</div>
-                            <div className="text-sm text-blue-400">House</div>
+                    <div className="flex-1 glass-panel p-6 rounded-2xl border border-white/10">
+                        <div className="flex gap-2 mb-4">
+                            <div className="px-3 py-1 rounded-lg bg-white/5 border border-white/10 text-xs text-slate-300">All Languages</div>
+                            <div className="px-3 py-1 rounded-lg bg-white/5 border border-white/10 text-xs text-emerald-400">✨ Smart Sort</div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-3">
+                            <div className="h-24 rounded-xl bg-white/5 border border-white/5"></div>
+                            <div className="h-24 rounded-xl bg-white/5 border border-white/5"></div>
                         </div>
                     </div>
                 </section>
 
                 {/* Step 4: Practice */}
-                <section className="flex flex-col md:flex-row-reverse gap-8 items-center">
+                <section className="flex flex-col md:flex-row gap-8 items-center">
                     <div className="flex-1">
                         <div className="w-12 h-12 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center mb-4">
                             <Dumbbell size={24} />
                         </div>
-                        <h2 className="text-2xl font-bold text-white mb-3">4. Practice Arena</h2>
+                        <h2 className="text-2xl font-bold text-white mb-3">5. Practice Arena</h2>
                         <p className="text-slate-400 leading-relaxed mb-4">
                             Test your knowledge with auto-generated exercises.
                         </p>
@@ -126,12 +172,12 @@ const GuidePage: React.FC = () => {
                 </section>
 
                 {/* Step 5: Reading Lounge */}
-                <section className="flex flex-col md:flex-row gap-8 items-center">
+                <section className="flex flex-col md:flex-row-reverse gap-8 items-center">
                     <div className="flex-1">
                         <div className="w-12 h-12 rounded-xl bg-purple-500/20 text-purple-400 flex items-center justify-center mb-4">
                             <BookOpen size={24} />
                         </div>
-                        <h2 className="text-2xl font-bold text-white mb-3">5. Reading Lounge</h2>
+                        <h2 className="text-2xl font-bold text-white mb-3">6. Reading Lounge</h2>
                         <p className="text-slate-400 leading-relaxed mb-4">
                             Immerse yourself in stories and conversations.
                         </p>
@@ -152,12 +198,12 @@ const GuidePage: React.FC = () => {
                 </section>
 
                 {/* Step 6: Backup */}
-                <section className="flex flex-col md:flex-row-reverse gap-8 items-center">
+                <section className="flex flex-col md:flex-row gap-8 items-center">
                     <div className="flex-1">
                         <div className="w-12 h-12 rounded-xl bg-slate-700 text-slate-300 flex items-center justify-center mb-4">
                             <Save size={24} />
                         </div>
-                        <h2 className="text-2xl font-bold text-white mb-3">6. Backup Your Data</h2>
+                        <h2 className="text-2xl font-bold text-white mb-3">7. Backup Your Data</h2>
                         <p className="text-slate-400 leading-relaxed mb-4">
                             Your data lives in your browser. To keep it safe:
                         </p>

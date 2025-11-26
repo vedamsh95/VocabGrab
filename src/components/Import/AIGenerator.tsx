@@ -200,6 +200,14 @@ const AIGenerator: React.FC<AIGeneratorProps> = ({ onSuccess }) => {
     const [generatedJson, setGeneratedJson] = useState<string | null>(null);
     const [showHelp, setShowHelp] = useState(false);
     const [showPreview, setShowPreview] = useState(false);
+    const [showAdvanced, setShowAdvanced] = useState(false);
+
+    // Advanced Options State
+    const [vocabCount, setVocabCount] = useState(15);
+    const [readingLength, setReadingLength] = useState(12);
+    const [grammarExamples, setGrammarExamples] = useState(5);
+    const [scenarioType, setScenarioType] = useState('General');
+    const [tone, setTone] = useState('Neutral');
 
     // Model selection state
     const [models, setModels] = useState<Model[]>([]);
@@ -278,13 +286,25 @@ const AIGenerator: React.FC<AIGeneratorProps> = ({ onSuccess }) => {
         handleSaveKey();
 
         try {
-            const systemPrompt = mode === 'vocab' ? SYSTEM_PROMPT_VOCAB :
+            let systemPrompt = mode === 'vocab' ? SYSTEM_PROMPT_VOCAB :
                 mode === 'reading' ? SYSTEM_PROMPT_READING : SYSTEM_PROMPT_GRAMMAR;
+
+            // Inject advanced constraints into system prompt
+            if (mode === 'vocab') {
+                systemPrompt = systemPrompt.replace(/Generate \d+-\d+ vocab items/, `Generate ${vocabCount} vocab items`);
+            } else if (mode === 'reading') {
+                systemPrompt = systemPrompt.replace(/Generate a short story or conversation with \d+-\d+ sentences/, `Generate a short story or conversation with ${readingLength} sentences`);
+            } else if (mode === 'grammar') {
+                systemPrompt += `\nInclude exactly ${grammarExamples} examples in the inductive discovery section.`;
+            }
+
             const prompt = `
             Topic: ${topic}
             Target Language: ${targetLanguage}
             Difficulty: ${difficulty}
             Mode: ${mode === 'vocab' ? 'Vocabulary & Exercises' : mode === 'reading' ? 'Reading Comprehension / Story' : 'Grammar Lesson'}
+            Tone: ${tone}
+            Scenario Context: ${scenarioType}
             
             ${systemPrompt}
             `;
@@ -574,6 +594,112 @@ const AIGenerator: React.FC<AIGeneratorProps> = ({ onSuccess }) => {
                                 <option value="Advanced" className="bg-slate-900">Advanced (C1-C2)</option>
                             </select>
                         </div>
+                    </div>
+
+                    {/* Advanced Options Toggle */}
+                    <div className="border-t border-white/5 pt-4">
+                        <button
+                            onClick={() => setShowAdvanced(!showAdvanced)}
+                            className="flex items-center gap-2 text-sm text-emerald-400 hover:text-emerald-300 transition-colors font-medium"
+                        >
+                            {showAdvanced ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                            Advanced Options
+                        </button>
+
+                        {showAdvanced && (
+                            <div className="mt-4 space-y-4 animate-in slide-in-from-top-2">
+                                {/* Tone Selection */}
+                                <div>
+                                    <label className="text-xs text-slate-400 block mb-2">Tone / Style</label>
+                                    <div className="flex gap-2">
+                                        {['Neutral', 'Formal', 'Informal', 'Humorous'].map((t) => (
+                                            <button
+                                                key={t}
+                                                onClick={() => setTone(t)}
+                                                className={clsx(
+                                                    "px-3 py-1.5 rounded-lg text-xs font-medium border transition-all",
+                                                    tone === t
+                                                        ? "bg-emerald-500/20 border-emerald-500/50 text-emerald-400"
+                                                        : "bg-white/5 border-white/10 text-slate-400 hover:bg-white/10"
+                                                )}
+                                            >
+                                                {t}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* Mode Specific Options */}
+                                {mode === 'vocab' && (
+                                    <div>
+                                        <div className="flex justify-between text-xs text-slate-400 mb-2">
+                                            <span>Vocabulary Count</span>
+                                            <span className="text-emerald-400">{vocabCount} items</span>
+                                        </div>
+                                        <input
+                                            type="range"
+                                            min="5"
+                                            max="50"
+                                            step="5"
+                                            value={vocabCount}
+                                            onChange={(e) => setVocabCount(parseInt(e.target.value))}
+                                            className="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer accent-emerald-500"
+                                        />
+                                    </div>
+                                )}
+
+                                {mode === 'reading' && (
+                                    <div>
+                                        <div className="flex justify-between text-xs text-slate-400 mb-2">
+                                            <span>Story Length</span>
+                                            <span className="text-emerald-400">{readingLength} sentences</span>
+                                        </div>
+                                        <input
+                                            type="range"
+                                            min="5"
+                                            max="40"
+                                            value={readingLength}
+                                            onChange={(e) => setReadingLength(parseInt(e.target.value))}
+                                            className="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer accent-emerald-500"
+                                        />
+                                    </div>
+                                )}
+
+                                {mode === 'grammar' && (
+                                    <div className="space-y-4">
+                                        <div>
+                                            <div className="flex justify-between text-xs text-slate-400 mb-2">
+                                                <span>Example Sentences</span>
+                                                <span className="text-emerald-400">{grammarExamples} examples</span>
+                                            </div>
+                                            <input
+                                                type="range"
+                                                min="3"
+                                                max="10"
+                                                value={grammarExamples}
+                                                onChange={(e) => setGrammarExamples(parseInt(e.target.value))}
+                                                className="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer accent-emerald-500"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="text-xs text-slate-400 block mb-2">Scenario Context</label>
+                                            <select
+                                                value={scenarioType}
+                                                onChange={(e) => setScenarioType(e.target.value)}
+                                                className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500/50"
+                                            >
+                                                <option value="General" className="bg-slate-900">General</option>
+                                                <option value="Business" className="bg-slate-900">Business / Professional</option>
+                                                <option value="Travel" className="bg-slate-900">Travel / Tourism</option>
+                                                <option value="Academic" className="bg-slate-900">Academic</option>
+                                                <option value="Casual" className="bg-slate-900">Casual Conversation</option>
+                                                <option value="Medical" className="bg-slate-900">Medical</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        )}
                     </div>
 
                     <div className="mt-auto flex flex-col gap-3">

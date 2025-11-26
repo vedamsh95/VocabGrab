@@ -10,6 +10,7 @@ import Logo from '../Common/Logo';
 import StatsSlider from './StatsSlider';
 import QuickActionsCarousel from './QuickActionsCarousel';
 import LibraryTile from './LibraryTile';
+import SetupGuideTile from './SetupGuideTile';
 import SmartFocusTile from './SmartFocusTile';
 
 // Floating Letters Component (Background)
@@ -203,7 +204,14 @@ const Dashboard: React.FC = () => {
 
                 {/* Middle & Right Column: Smart Focus & Library */}
                 <div className="lg:col-span-2 space-y-6">
-                    <SmartFocusTile activeSet={activeSet} allSets={sets} />
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div className="md:col-span-2">
+                            <SmartFocusTile activeSet={activeSet} allSets={sets} />
+                        </div>
+                        <div className="md:col-span-1">
+                            <SetupGuideTile />
+                        </div>
+                    </div>
 
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
