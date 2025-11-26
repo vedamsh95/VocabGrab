@@ -44,9 +44,9 @@ const LiveTutor: React.FC = () => {
                 setIsConnected(false);
             });
 
-            client.on('error', (err) => {
+            client.on('error', (err: Error) => {
                 console.error("Live Client Error:", err);
-                setError("Connection failed. Please check your API key or try again.");
+                setError(err.message || "Connection failed. Please check your API key.");
                 setStatus('error');
                 setIsConnected(false);
             });

@@ -44,12 +44,18 @@ export class LiveClient extends EventEmitter {
 
             this.ws.onerror = (error) => {
                 console.error('WebSocket Error:', error);
-                this.emit('error', error);
+                this.emit('error', new Error('WebSocket connection failed'));
             };
 
-            this.ws.onclose = () => {
+            this.ws.onclose = (event) => {
+                console.log('WebSocket Closed:', event.code, event.reason);
                 this.isConnected = false;
                 this.emit('disconnected');
+
+                if (event.code !== 1000) {
+                    this.emit('error', new Error(`Connection closed: ${event.code} ${event.reason || 'Unknown error'}`));
+                }
+
                 this.stopAudio();
             };
 
