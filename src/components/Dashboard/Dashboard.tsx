@@ -12,6 +12,7 @@ import QuickActionsCarousel from './QuickActionsCarousel';
 import LibraryTile from './LibraryTile';
 import SetupGuideTile from './SetupGuideTile';
 import SmartFocusTile from './SmartFocusTile';
+import LiveTutor from '../Practice/LiveTutor';
 
 // Floating Letters Component (Background)
 const FloatingLetters = () => {
@@ -212,6 +213,16 @@ const Dashboard: React.FC = () => {
                             <SetupGuideTile />
                         </div>
                     </div>
+
+                    {/* Live Tutor Tile */}
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.4 }}
+                        className="h-[400px]"
+                    >
+                        <LiveTutor />
+                    </motion.div>
 
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
