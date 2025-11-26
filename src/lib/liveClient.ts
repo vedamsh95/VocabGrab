@@ -18,7 +18,7 @@ export class LiveClient extends EventEmitter {
     constructor(config: LiveClientConfig) {
         super();
         this.config = {
-            model: 'models/gemini-2.5-flash-live', // Updated to user-requested model
+            model: 'models/gemini-2.5-flash-live', // User requested model
             voiceName: 'Puck', // Default voice
             ...config
         };

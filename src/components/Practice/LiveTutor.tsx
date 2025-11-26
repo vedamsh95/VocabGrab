@@ -46,7 +46,15 @@ const LiveTutor: React.FC = () => {
 
             client.on('error', (err: Error) => {
                 console.error("Live Client Error:", err);
-                setError(err.message || "Connection failed. Please check your API key.");
+                let message = err.message || "Connection failed.";
+
+                if (message.includes('1011') || message.includes('quota')) {
+                    message = "Quota Exceeded. Please check your Google AI Studio plan.";
+                } else if (message.includes('1008')) {
+                    message = "Model not supported. Please check the model name.";
+                }
+
+                setError(message);
                 setStatus('error');
                 setIsConnected(false);
             });
