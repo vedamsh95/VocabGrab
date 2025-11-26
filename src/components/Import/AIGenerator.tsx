@@ -194,6 +194,7 @@ const AIGenerator: React.FC<AIGeneratorProps> = ({ onSuccess }) => {
     const [error, setError] = useState<string | null>(null);
     const [generatedJson, setGeneratedJson] = useState<string | null>(null);
     const [showHelp, setShowHelp] = useState(false);
+    const [showPreview, setShowPreview] = useState(false);
 
     // Model selection state
     const [models, setModels] = useState<Model[]>([]);
@@ -533,114 +534,139 @@ const AIGenerator: React.FC<AIGeneratorProps> = ({ onSuccess }) => {
                             className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-emerald-500/50 transition-colors"
                         />
                     </div>
-                </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                    <div>
-                        <label className="text-sm text-slate-400 block mb-2">Target Language</label>
-                        <div className="relative">
-                            <Globe size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <label className="text-sm text-slate-400 block mb-2">Target Language</label>
+                            <div className="relative">
+                                <Globe size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+                                <select
+                                    value={targetLanguage}
+                                    onChange={(e) => setTargetLanguage(e.target.value)}
+                                    className="w-full bg-white/5 border border-white/10 rounded-xl pl-10 pr-4 py-3 text-white focus:outline-none focus:border-emerald-500/50 appearance-none"
+                                >
+                                    <option value="German" className="bg-slate-900">German</option>
+                                    <option value="Spanish" className="bg-slate-900">Spanish</option>
+                                    <option value="French" className="bg-slate-900">French</option>
+                                    <option value="Italian" className="bg-slate-900">Italian</option>
+                                    <option value="Japanese" className="bg-slate-900">Japanese</option>
+                                    <option value="Chinese" className="bg-slate-900">Chinese</option>
+                                    <option value="Korean" className="bg-slate-900">Korean</option>
+                                    <option value="Russian" className="bg-slate-900">Russian</option>
+                                    <option value="Portuguese" className="bg-slate-900">Portuguese</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div>
+                            <label className="text-sm text-slate-400 block mb-2">Difficulty</label>
                             <select
-                                value={targetLanguage}
-                                onChange={(e) => setTargetLanguage(e.target.value)}
-                                className="w-full bg-white/5 border border-white/10 rounded-xl pl-10 pr-4 py-3 text-white focus:outline-none focus:border-emerald-500/50 appearance-none"
+                                value={difficulty}
+                                onChange={(e) => setDifficulty(e.target.value)}
+                                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-emerald-500/50 appearance-none"
                             >
-                                <option value="German" className="bg-slate-900">German</option>
-                                <option value="Spanish" className="bg-slate-900">Spanish</option>
-                                <option value="French" className="bg-slate-900">French</option>
-                                <option value="Italian" className="bg-slate-900">Italian</option>
-                                <option value="Japanese" className="bg-slate-900">Japanese</option>
-                                <option value="Chinese" className="bg-slate-900">Chinese</option>
-                                <option value="Korean" className="bg-slate-900">Korean</option>
-                                <option value="Russian" className="bg-slate-900">Russian</option>
-                                <option value="Portuguese" className="bg-slate-900">Portuguese</option>
+                                <option value="Beginner" className="bg-slate-900">Beginner (A1-A2)</option>
+                                <option value="Intermediate" className="bg-slate-900">Intermediate (B1-B2)</option>
+                                <option value="Advanced" className="bg-slate-900">Advanced (C1-C2)</option>
                             </select>
                         </div>
                     </div>
-                    <div>
-                        <label className="text-sm text-slate-400 block mb-2">Difficulty</label>
-                        <select
-                            value={difficulty}
-                            onChange={(e) => setDifficulty(e.target.value)}
-                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-emerald-500/50 appearance-none"
-                        >
-                            <option value="Beginner" className="bg-slate-900">Beginner (A1-A2)</option>
-                            <option value="Intermediate" className="bg-slate-900">Intermediate (B1-B2)</option>
-                            <option value="Advanced" className="bg-slate-900">Advanced (C1-C2)</option>
-                        </select>
+
+                    <div className="mt-auto flex flex-col gap-3">
+                        {error && (
+                            <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm flex items-start gap-2">
+                                <AlertCircle size={16} className="mt-0.5 shrink-0" />
+                                <p>{error}</p>
+                            </div>
+                        )}
+
+                        <div className="flex gap-3">
+                            <button
+                                onClick={handleGenerate}
+                                disabled={isLoading || !topic || !apiKey}
+                                className={clsx(
+                                    "flex-1 py-4 rounded-xl font-bold transition-all flex items-center justify-center gap-2 text-lg",
+                                    isLoading || !topic || !apiKey
+                                        ? "bg-white/5 text-slate-500 cursor-not-allowed"
+                                        : "bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-lg shadow-emerald-500/20 hover:scale-[1.02]"
+                                )}
+                            >
+                                {isLoading ? (
+                                    <>
+                                        <Loader2 size={24} className="animate-spin" />
+                                        Generating...
+                                    </>
+                                ) : (
+                                    <>
+                                        {generatedJson ? <RefreshCw size={20} /> : <Sparkles size={24} />}
+                                        {generatedJson ? 'Regenerate' : `Generate ${mode === 'vocab' ? 'Vocab' : mode === 'reading' ? 'Story' : 'Lesson'}`}
+                                    </>
+                                )}
+                            </button>
+
+                            {generatedJson && !isLoading && (
+                                <button
+                                    onClick={handleImport}
+                                    className="flex-1 py-4 bg-white/10 hover:bg-white/20 text-white rounded-xl font-bold transition-all flex items-center justify-center gap-2 text-lg border border-white/10 hover:border-white/20"
+                                >
+                                    <Save size={24} />
+                                    Import Set
+                                </button>
+                            )}
+                        </div>
                     </div>
                 </div>
 
-                <div className="mt-auto">
-                    {error && (
-                        <div className="mb-4 p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm flex items-start gap-2">
-                            <AlertCircle size={16} className="mt-0.5 shrink-0" />
-                            <p>{error}</p>
+                {/* Preview */}
+                <div className="glass-panel rounded-2xl p-6 flex flex-col relative overflow-hidden">
+                    {generatedJson ? (
+                        <>
+                            <div className="flex items-center justify-between mb-4">
+                                <h3 className="text-white font-bold flex items-center gap-2">
+                                    <Check size={18} className="text-emerald-400" />
+                                    Content Generated!
+                                </h3>
+                                <button
+                                    onClick={() => setShowPreview(!showPreview)}
+                                    className="text-xs text-slate-400 hover:text-white flex items-center gap-1 transition-colors"
+                                >
+                                    {showPreview ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                                    {showPreview ? 'Hide JSON' : 'Show JSON Syntax'}
+                                </button>
+                            </div>
+
+                            {!showPreview && (
+                                <div className="flex-1 flex flex-col items-center justify-center text-center p-6 bg-emerald-500/5 rounded-xl border border-emerald-500/10 mb-4 animate-in fade-in duration-300">
+                                    <div className="w-16 h-16 rounded-full bg-emerald-500/20 flex items-center justify-center mb-4 text-emerald-400">
+                                        <Check size={32} />
+                                    </div>
+                                    <h4 className="text-xl font-bold text-white mb-2">Ready to Import</h4>
+                                    <p className="text-slate-400 text-sm mb-6 max-w-xs mx-auto">
+                                        Your {mode === 'vocab' ? 'vocabulary list' : mode === 'reading' ? 'story' : 'grammar lesson'} is ready.
+                                        Click "Import Set" to add it to your library.
+                                    </p>
+                                </div>
+                            )}
+
+                            {showPreview && (
+                                <div className="flex-1 bg-[#02040a] rounded-xl p-4 overflow-y-auto mb-4 border border-white/10 animate-in slide-in-from-top-2">
+                                    <pre className="text-xs font-mono text-slate-300 whitespace-pre-wrap">
+                                        {generatedJson}
+                                    </pre>
+                                </div>
+                            )}
+                        </>
+                    ) : (
+                        <div className="flex-1 flex flex-col items-center justify-center text-slate-500 text-center p-8">
+                            <div className="w-20 h-20 rounded-full bg-white/5 flex items-center justify-center mb-6">
+                                <Sparkles size={40} className="opacity-20" />
+                            </div>
+                            <h3 className="text-lg font-medium text-white mb-2">AI Generator</h3>
+                            <p className="max-w-xs mx-auto">
+                                Enter a topic and let Gemini create a custom study set for you in seconds.
+                            </p>
                         </div>
                     )}
-
-                    <button
-                        onClick={handleGenerate}
-                        disabled={isLoading || !topic || !apiKey}
-                        className={clsx(
-                            "w-full py-4 rounded-xl font-bold transition-all flex items-center justify-center gap-2 text-lg",
-                            isLoading || !topic || !apiKey
-                                ? "bg-white/5 text-slate-500 cursor-not-allowed"
-                                : "bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-lg shadow-emerald-500/20 hover:scale-[1.02]"
-                        )}
-                    >
-                        {isLoading ? (
-                            <>
-                                <Loader2 size={24} className="animate-spin" />
-                                Generating Magic...
-                            </>
-                        ) : (
-                            <>
-                                <Sparkles size={24} />
-                                Generate {mode === 'vocab' ? 'Vocabulary' : mode === 'reading' ? 'Story' : 'Lesson'}
-                            </>
-                        )}
-                    </button>
                 </div>
-            </div>
-
-            {/* Preview */}
-            <div className="glass-panel rounded-2xl p-6 flex flex-col relative overflow-hidden">
-                {generatedJson ? (
-                    <>
-                        <div className="flex items-center justify-between mb-4">
-                            <h3 className="text-white font-bold flex items-center gap-2">
-                                <Check size={18} className="text-emerald-400" />
-                                Ready to Import
-                            </h3>
-                            <span className="text-xs text-slate-400 font-mono">
-                                {(generatedJson.length / 1024).toFixed(1)} KB
-                            </span>
-                        </div>
-                        <div className="flex-1 bg-[#02040a] rounded-xl p-4 overflow-y-auto mb-4 border border-white/10">
-                            <pre className="text-xs font-mono text-slate-300 whitespace-pre-wrap">
-                                {generatedJson}
-                            </pre>
-                        </div>
-                        <button
-                            onClick={handleImport}
-                            className="w-full py-3 bg-white/10 hover:bg-white/20 text-white rounded-xl font-medium transition-colors flex items-center justify-center gap-2"
-                        >
-                            <Save size={18} />
-                            Save to Library
-                        </button>
-                    </>
-                ) : (
-                    <div className="flex-1 flex flex-col items-center justify-center text-slate-500 text-center p-8">
-                        <div className="w-20 h-20 rounded-full bg-white/5 flex items-center justify-center mb-6">
-                            <Sparkles size={40} className="opacity-20" />
-                        </div>
-                        <h3 className="text-lg font-medium text-white mb-2">AI Generator</h3>
-                        <p className="max-w-xs mx-auto">
-                            Enter a topic and let Gemini create a custom study set for you in seconds.
-                        </p>
-                    </div>
-                )}
             </div>
         </div>
     );

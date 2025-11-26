@@ -73,10 +73,7 @@ const FlashcardDeck: React.FC = () => {
                         <h1 className="text-xl font-bold text-white">{activeSet.title}</h1>
                         <p className="text-slate-400 text-sm">Card {currentIndex + 1} of {cards.length}</p>
                     </div>
-                    <div className="text-center">
-                        <h1 className="text-xl font-bold text-white">{activeSet.title}</h1>
-                        <p className="text-slate-400 text-sm">Card {currentIndex + 1} of {cards.length}</p>
-                    </div>
+
                     <button
                         onClick={() => setInvertCards(!invertCards)}
                         className={clsx(
@@ -112,6 +109,24 @@ const FlashcardDeck: React.FC = () => {
                     </div>
                 ) : (
                     <div className="flex-1 flex flex-col items-center justify-center">
+                        {/* Explicit Controls */}
+                        <div className="flex gap-4 w-full max-w-xs mb-8">
+                            <button
+                                onClick={() => handleNext(false)}
+                                className="flex-1 py-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 font-bold hover:bg-red-500/20 transition-all active:scale-95 flex items-center justify-center gap-2"
+                            >
+                                <X className="w-5 h-5" />
+                                Incorrect
+                            </button>
+                            <button
+                                onClick={() => handleNext(true)}
+                                className="flex-1 py-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-bold hover:bg-emerald-500/20 transition-all active:scale-95 flex items-center justify-center gap-2"
+                            >
+                                <Check className="w-5 h-5" />
+                                Correct
+                            </button>
+                        </div>
+
                         <div className="relative w-full aspect-[3/4] perspective-1000 mb-8">
                             <motion.div
                                 className="w-full h-full relative preserve-3d transition-all duration-500"
@@ -136,7 +151,7 @@ const FlashcardDeck: React.FC = () => {
                                                 e.stopPropagation();
                                                 speak(
                                                     invertCards ? cards[currentIndex].front : cards[currentIndex].back,
-                                                    invertCards ? 'en-US' : activeSet.targetLanguage
+                                                    invertCards ? activeSet.targetLanguage : 'en-US'
                                                 );
                                             }}
                                             className="p-3 rounded-full bg-white/10 hover:bg-white/20 transition-colors text-emerald-400 inline-flex"
@@ -163,7 +178,7 @@ const FlashcardDeck: React.FC = () => {
                                             e.stopPropagation();
                                             speak(
                                                 invertCards ? cards[currentIndex].back : cards[currentIndex].front,
-                                                invertCards ? activeSet.targetLanguage : 'en-US'
+                                                invertCards ? 'en-US' : activeSet.targetLanguage
                                             );
                                         }}
                                         className="p-3 rounded-full bg-white/10 hover:bg-white/20 transition-colors text-emerald-400 inline-flex"
@@ -174,23 +189,7 @@ const FlashcardDeck: React.FC = () => {
                             </motion.div>
                         </div>
 
-                        {/* Explicit Controls */}
-                        <div className="flex gap-4 w-full max-w-xs">
-                            <button
-                                onClick={() => handleNext(false)}
-                                className="flex-1 py-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 font-bold hover:bg-red-500/20 transition-all active:scale-95 flex items-center justify-center gap-2"
-                            >
-                                <X className="w-5 h-5" />
-                                Incorrect
-                            </button>
-                            <button
-                                onClick={() => handleNext(true)}
-                                className="flex-1 py-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-bold hover:bg-emerald-500/20 transition-all active:scale-95 flex items-center justify-center gap-2"
-                            >
-                                <Check className="w-5 h-5" />
-                                Correct
-                            </button>
-                        </div>
+
                     </div>
                 )}
             </div>
