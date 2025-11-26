@@ -48,14 +48,9 @@ const SmartSentence: React.FC<SmartSentenceProps> = ({ sentence, className, tran
 
 interface SmartWordProps {
     word: string;
-interface SmartWordProps {
-    word: string;
     vocabItem?: { word: string; translation: string; grammarTip?: string; morphology?: MorphologySegment[] };
     sentenceContext: string;
     translationClient?: TranslationClient | null;
-}
-sentenceContext: string;
-translationClient ?: TranslationClient | null;
 }
 
 const SmartWord: React.FC<SmartWordProps> = ({ word, vocabItem, sentenceContext, translationClient }) => {
