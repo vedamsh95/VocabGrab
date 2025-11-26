@@ -122,6 +122,21 @@ Schema:
           "common_pitfalls": [
             { "incorrect": "...", "correct": "...", "explanation": "..." }
           ]
+        },
+        "morphology_focus": {
+            "description": "Detailed breakdown of key words...",
+            "examples": [
+                {
+                    "word": "Unfreundlichkeit",
+                    "translation": "Unfriendliness",
+                    "morphology": [
+                        { "segment": "Un", "gloss": "not", "type": "prefix" },
+                        { "segment": "freund", "gloss": "friend", "type": "root" },
+                        { "segment": "lich", "gloss": "adj", "type": "suffix" },
+                        { "segment": "keit", "gloss": "noun", "type": "suffix" }
+                    ]
+                }
+            ]
         }
       },
       "practice": {
@@ -142,9 +157,26 @@ Schema:
         ]
       }
     }
-  ]
+  ],
+  "vocabulary": [
+    { 
+      "word": "...", 
+      "translation": "...", 
+      "exampleSentence": "...", 
+      "grammarTip": "...",
+      "morphology": [ { "segment": "...", "gloss": "...", "type": "root" } ]
+    }
+  ],
+  "flashcards": [
+    { "front": "...", "back": "..." }
+  ],
+  "exercises": {
+    "fillInBlanks": [ { "id": "...", "question": "...", "answer": "..." } ],
+    "multipleChoice": [ { "id": "...", "question": "...", "answer": "...", "options": ["..."] } ]
+  }
 }
 Generate a complete lesson with detailed academic explanations, extensive contrastive analysis, and interactive exercises.
+IMPORTANT: You MUST generate the 'vocabulary', 'flashcards', and 'exercises' sections in addition to the 'grammarLessons' section. Do not omit them.
 `;
 
 interface AIGeneratorProps {

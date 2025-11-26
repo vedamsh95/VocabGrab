@@ -5,6 +5,7 @@ import { getActiveSet } from '../../lib/storage';
 import { clsx } from 'clsx';
 import Logo from '../Common/Logo';
 import { useTTS } from '../../hooks/useTTS';
+import MorphologyViewer from '../Grammar/MorphologyViewer';
 
 const VocabTable: React.FC = () => {
     const activeSet = getActiveSet();
@@ -71,6 +72,7 @@ const VocabTable: React.FC = () => {
                                 <th className="p-4 font-semibold text-slate-400 text-sm uppercase tracking-wider">Word</th>
                                 <th className="p-4 font-semibold text-slate-400 text-sm uppercase tracking-wider">Translation</th>
                                 <th className="p-4 font-semibold text-slate-400 text-sm uppercase tracking-wider hidden md:table-cell">Example</th>
+                                <th className="p-4 font-semibold text-slate-400 text-sm uppercase tracking-wider hidden lg:table-cell">Morphology</th>
                                 <th className="p-4 w-10"></th>
                             </tr>
                         </thead>
@@ -98,6 +100,22 @@ const VocabTable: React.FC = () => {
                                         <td className="p-4 text-slate-500 hidden md:table-cell truncate max-w-xs">
                                             {item.exampleSentence}
                                         </td>
+                                        <td className="p-4 text-slate-500 hidden lg:table-cell">
+                                            {item.morphology ? (
+                                                <div className="flex gap-1">
+                                                    {item.morphology.map((m, i) => (
+                                                        <span key={i} className={clsx(
+                                                            "text-xs px-1.5 py-0.5 rounded",
+                                                            m.type === 'root' ? "bg-emerald-500/20 text-emerald-400" : "bg-blue-500/20 text-blue-400"
+                                                        )}>
+                                                            {m.segment}
+                                                        </span>
+                                                    ))}
+                                                </div>
+                                            ) : (
+                                                <span className="text-slate-600 text-xs italic">No data</span>
+                                            )}
+                                        </td>
                                         <td className="p-4 text-slate-600">
                                             {expandedRow === index ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
                                         </td>
@@ -117,6 +135,12 @@ const VocabTable: React.FC = () => {
                                                             <p className="text-teal-100 text-sm">
                                                                 {item.grammarTip}
                                                             </p>
+                                                        </div>
+                                                    )}
+                                                    {item.morphology && (
+                                                        <div className="md:col-span-2 p-4 rounded-xl bg-purple-500/10 border border-purple-500/20">
+                                                            <h4 className="text-xs font-bold text-purple-400 uppercase tracking-wider mb-3">Morphological Breakdown</h4>
+                                                            <MorphologyViewer segments={item.morphology} />
                                                         </div>
                                                     )}
                                                 </div>

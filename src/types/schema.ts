@@ -103,6 +103,14 @@ export interface GrammarLesson {
                 explanation: string;
             }[];
         };
+        morphology_focus?: {
+            description: string;
+            examples: {
+                word: string;
+                translation: string;
+                morphology: MorphologySegment[];
+            }[];
+        };
     };
     practice: {
         scaffolded_exercises: ({

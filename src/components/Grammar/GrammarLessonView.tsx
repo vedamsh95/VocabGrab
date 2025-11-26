@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { getActiveSet } from '../../lib/storage';
-import { Book, Lightbulb, AlertTriangle, CheckCircle, Play, Pause, GraduationCap } from 'lucide-react';
+import { Book, Lightbulb, AlertTriangle, CheckCircle, Play, Pause, GraduationCap, Split, Puzzle } from 'lucide-react';
 import { clsx } from 'clsx';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTTS } from '../../hooks/useTTS';
@@ -12,7 +12,7 @@ const GrammarLessonView: React.FC = () => {
     const activeSet = getActiveSet();
     const lessons = activeSet?.grammarLessons || [];
     const [currentLessonIndex] = useState(0);
-    const [currentSection, setCurrentSection] = useState<'hook' | 'inductive' | 'deductive' | 'contrastive' | 'practice'>('deductive');
+    const [currentSection, setCurrentSection] = useState<'hook' | 'inductive' | 'deductive' | 'contrastive' | 'morphology' | 'practice'>('deductive');
     const [practiceState, setPracticeState] = useState<Record<number, { selected: string, isCorrect: boolean }>>({});
     const { speak, isSpeaking, stop } = useTTS();
 
@@ -49,7 +49,8 @@ const GrammarLessonView: React.FC = () => {
         { id: 'inductive', label: 'Examples', icon: Lightbulb },
         { id: 'deductive', label: 'Rules', icon: GraduationCap },
         { id: 'contrastive', label: 'Pitfalls', icon: AlertTriangle },
-        { id: 'practice', label: 'Practice', icon: CheckCircle },
+        { id: 'morphology', label: 'Morphology', icon: Split },
+        { id: 'practice', label: 'Practice', icon: Puzzle },
     ] as const;
 
     return (
@@ -231,6 +232,67 @@ const GrammarLessonView: React.FC = () => {
                                         ))}
                                     </div>
                                 </div>
+                            </div>
+                        )}
+
+                        {currentSection === 'morphology' && (
+                            <div className="space-y-6">
+                                <div className="glass-panel p-6 rounded-2xl border border-white/10">
+                                    <div className="flex items-center gap-3 mb-6">
+                                        <div className="p-3 bg-purple-500/20 rounded-xl text-purple-400">
+                                            <Split size={24} />
+                                        </div>
+                                        <h2 className="text-2xl font-bold text-white">Morphological Focus</h2>
+                                    </div>
+
+                                    {pedagogy.morphology_focus ? (
+                                        <div className="space-y-8">
+                                            <p className="text-lg text-slate-300 leading-relaxed">
+                                                {pedagogy.morphology_focus.description}
+                                            </p>
+
+                                            <div className="grid grid-cols-1 gap-4">
+                                                {pedagogy.morphology_focus.examples.map((ex, idx) => (
+                                                    <div key={idx} className="bg-black/30 rounded-xl p-6 border border-white/5">
+                                                        <div className="flex items-center justify-between mb-4">
+                                                            <div>
+                                                                <h4 className="text-xl font-bold text-white mb-1">{ex.word}</h4>
+                                                                <p className="text-slate-400 italic">{ex.translation}</p>
+                                                            </div>
+                                                        </div>
+                                                        <MorphologyViewer segments={ex.morphology} />
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div className="text-center py-12 text-slate-500">
+                                            <Split size={48} className="mx-auto mb-4 opacity-20" />
+                                            <p>No specific morphology focus for this lesson.</p>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Show Morpheme Builder exercises here as well if available */}
+                                {practice.scaffolded_exercises.some(ex => ex.type === 'morpheme_builder') && (
+                                    <div className="glass-panel p-8 rounded-2xl border border-white/10">
+                                        <h3 className="text-xl font-bold text-white mb-6">Interactive Practice</h3>
+                                        <div className="space-y-8">
+                                            {practice.scaffolded_exercises
+                                                .filter(ex => ex.type === 'morpheme_builder')
+                                                .map((ex, idx) => (
+                                                    // @ts-ignore
+                                                    <MorphemeBuilder
+                                                        key={idx}
+                                                        word={ex.word}
+                                                        translation={ex.translation}
+                                                        segments={ex.segments}
+                                                        hint={ex.hint}
+                                                    />
+                                                ))}
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         )}
 
