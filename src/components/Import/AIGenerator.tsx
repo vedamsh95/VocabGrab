@@ -75,6 +75,13 @@ Schema:
   ]
 }
 Generate a short story or conversation with 8-12 sentences.
+`;
+
+const SYSTEM_PROMPT_GRAMMAR = `
+You are a language learning content generator. Output ONLY valid JSON.
+Schema:
+{
+  "title": "Grammar Topic",
   "targetLanguage": "German",
   "difficulty": "B1",
   "grammarLessons": [
@@ -135,38 +142,9 @@ Generate a short story or conversation with 8-12 sentences.
         ]
       }
     }
-  ],
-  "vocabulary": [
-    { "word": "...", "translation": "...", "exampleSentence": "...", "grammarTip": "..." }
-  ],
-  "flashcards": [
-    { "front": "...", "back": "..." }
-  ],
-  "readingSections": [
-    {
-      "id": "reading_1",
-      "title": "Short Story",
-      "targetLanguage": "German",
-      "mode": "Story",
-      "content": [
-        {
-          "id": "sent_1",
-          "speaker": "Narrator",
-          "sentence": "...",
-          "translation": "...",
-          "formationNote": "...",
-          "smartLesson": { "construction": "...", "situation": "..." },
-          "grammarTags": ["..."]
-        }
-      ]
-    }
-  ],
-  "exercises": {
-    "fillInBlanks": [ { "id": "...", "question": "...", "answer": "..." } ],
-    "multipleChoice": [ { "id": "...", "question": "...", "answer": "...", "options": ["..."] } ]
-  }
+  ]
 }
-Generate a complete lesson with 5 vocab items, 5 flashcards, 1 short story (5-8 sentences), and 5 exercises of each type.
+Generate a complete lesson with detailed academic explanations, extensive contrastive analysis, and interactive exercises.
 `;
 
 interface AIGeneratorProps {
