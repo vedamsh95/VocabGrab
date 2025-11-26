@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useTTS } from '../../hooks/useTTS';
 import SmartSentence from '../Practice/SmartSentence';
 import MorphologyViewer from './MorphologyViewer';
+import MorphemeBuilder from '../Practice/MorphemeBuilder';
 
 const GrammarLessonView: React.FC = () => {
     const activeSet = getActiveSet();
@@ -248,55 +249,68 @@ const GrammarLessonView: React.FC = () => {
                                                     <span className="text-xs font-bold text-slate-500 uppercase">Exercise {idx + 1}</span>
                                                     <span className="text-xs px-2 py-1 rounded bg-white/10 text-slate-300">{ex.type.replace('_', ' ')}</span>
                                                 </div>
-                                                <p className="text-lg text-white mb-6 font-medium">{ex.question}</p>
 
-                                                {ex.options ? (
-                                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                                        {ex.options.map((opt, i) => {
-                                                            const state = practiceState[idx];
-                                                            const isSelected = state?.selected === opt;
-                                                            const isCorrectAnswer = opt === ex.correct_answer;
-
-                                                            let btnClass = "bg-white/5 border-white/10 text-slate-300 hover:bg-white/10";
-
-                                                            if (state) {
-                                                                if (isCorrectAnswer) btnClass = "bg-emerald-500/20 border-emerald-500 text-emerald-400";
-                                                                else if (isSelected && !state.isCorrect) btnClass = "bg-red-500/20 border-red-500 text-red-400";
-                                                                else btnClass = "bg-white/5 border-white/10 text-slate-500 opacity-50";
-                                                            }
-
-                                                            return (
-                                                                <button
-                                                                    key={i}
-                                                                    onClick={() => handleOptionSelect(idx, opt, ex.correct_answer || '')}
-                                                                    disabled={!!state}
-                                                                    className={clsx(
-                                                                        "p-3 rounded-lg border text-left transition-all",
-                                                                        btnClass
-                                                                    )}
-                                                                >
-                                                                    <div className="flex items-center justify-between">
-                                                                        {opt}
-                                                                        {state && isCorrectAnswer && <CheckCircle size={16} />}
-                                                                        {state && isSelected && !state.isCorrect && <AlertTriangle size={16} />}
-                                                                    </div>
-                                                                </button>
-                                                            );
-                                                        })}
-                                                    </div>
-                                                ) : (
-                                                    <input
-                                                        type="text"
-                                                        placeholder="Type your answer..."
-                                                        className="w-full bg-black/20 border border-white/10 rounded-lg p-3 text-white focus:border-emerald-500/50 focus:outline-none"
+                                                {ex.type === 'morpheme_builder' ? (
+                                                    // @ts-ignore - TS doesn't fully infer the union type discrimination here yet
+                                                    <MorphemeBuilder
+                                                        word={ex.word}
+                                                        translation={ex.translation}
+                                                        segments={ex.segments}
+                                                        hint={ex.hint}
                                                     />
-                                                )}
+                                                ) : (
+                                                    <>
+                                                        <p className="text-lg text-white mb-6 font-medium">{ex.question}</p>
 
-                                                <div className="mt-4 flex justify-end">
-                                                    <button className="text-xs text-slate-500 hover:text-emerald-400 transition-colors flex items-center gap-1">
-                                                        <Lightbulb size={12} /> Show Hint
-                                                    </button>
-                                                </div>
+                                                        {ex.options ? (
+                                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                                                {ex.options.map((opt, i) => {
+                                                                    const state = practiceState[idx];
+                                                                    const isSelected = state?.selected === opt;
+                                                                    const isCorrectAnswer = opt === ex.correct_answer;
+
+                                                                    let btnClass = "bg-white/5 border-white/10 text-slate-300 hover:bg-white/10";
+
+                                                                    if (state) {
+                                                                        if (isCorrectAnswer) btnClass = "bg-emerald-500/20 border-emerald-500 text-emerald-400";
+                                                                        else if (isSelected && !state.isCorrect) btnClass = "bg-red-500/20 border-red-500 text-red-400";
+                                                                        else btnClass = "bg-white/5 border-white/10 text-slate-500 opacity-50";
+                                                                    }
+
+                                                                    return (
+                                                                        <button
+                                                                            key={i}
+                                                                            onClick={() => handleOptionSelect(idx, opt, ex.correct_answer || '')}
+                                                                            disabled={!!state}
+                                                                            className={clsx(
+                                                                                "p-3 rounded-lg border text-left transition-all",
+                                                                                btnClass
+                                                                            )}
+                                                                        >
+                                                                            <div className="flex items-center justify-between">
+                                                                                {opt}
+                                                                                {state && isCorrectAnswer && <CheckCircle size={16} />}
+                                                                                {state && isSelected && !state.isCorrect && <AlertTriangle size={16} />}
+                                                                            </div>
+                                                                        </button>
+                                                                    );
+                                                                })}
+                                                            </div>
+                                                        ) : (
+                                                            <input
+                                                                type="text"
+                                                                placeholder="Type your answer..."
+                                                                className="w-full bg-black/20 border border-white/10 rounded-lg p-3 text-white focus:border-emerald-500/50 focus:outline-none"
+                                                            />
+                                                        )}
+
+                                                        <div className="mt-4 flex justify-end">
+                                                            <button className="text-xs text-slate-500 hover:text-emerald-400 transition-colors flex items-center gap-1">
+                                                                <Lightbulb size={12} /> Show Hint
+                                                            </button>
+                                                        </div>
+                                                    </>
+                                                )}
                                             </div>
                                         ))}
                                     </div>

@@ -119,7 +119,19 @@ Generate a short story or conversation with 8-12 sentences.
       },
       "practice": {
         "scaffolded_exercises": [
-          { "type": "multiple_choice", "question": "...", "options": ["..."], "correct_answer": "...", "hint": "..." }
+          { "type": "multiple_choice", "question": "...", "options": ["..."], "correct_answer": "...", "hint": "..." },
+          { 
+            "type": "morpheme_builder", 
+            "word": "Unfriendliness", 
+            "translation": "Unfreundlichkeit", 
+            "segments": [
+              { "text": "un", "type": "prefix", "meaning": "not" },
+              { "text": "friend", "type": "root", "meaning": "friend" },
+              { "text": "li", "type": "suffix", "meaning": "adjective former" },
+              { "text": "ness", "type": "suffix", "meaning": "noun former" }
+            ],
+            "hint": "Start with the prefix meaning 'not'."
+          }
         ]
       }
     }

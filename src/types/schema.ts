@@ -105,13 +105,19 @@ export interface GrammarLesson {
         };
     };
     practice: {
-        scaffolded_exercises: {
+        scaffolded_exercises: ({
             type: "multiple_choice" | "gap_fill" | "sentence_reorder";
             question: string;
             options?: string[];
             correct_answer: string;
             hint?: string;
-        }[];
+        } | {
+            type: "morpheme_builder";
+            word: string;
+            translation: string;
+            segments: { text: string; type: 'root' | 'prefix' | 'suffix' | 'infix'; meaning: string }[];
+            hint?: string;
+        })[];
     };
 }
 
